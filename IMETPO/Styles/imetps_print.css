@@ -1,0 +1,88 @@
+﻿body {
+  font : 10pt sans-serif;
+  background-color: #FFFFFF;
+}
+
+table {
+  font : 10pt sans-serif;
+}
+
+th {
+  text-align : left;
+} 
+
+h1 {
+  text-align: left;
+  font-size: 150%;
+  font-weight: bold;
+}
+
+.top
+{
+    width:100%;
+}
+
+.top h1 {
+  text-align: right;
+  padding-bottom: 5px;
+  font-size: 120%;
+  font-weight: normal;
+  text-transform: lowercase;
+  letter-spacing: 5pt;
+}
+
+.top img {
+  float: left; 
+  padding-bottom: 0px;
+}
+
+.top p {
+  text-align: right;
+  margin-top: -10px;
+  padding-top: 5px;
+  font-size: 90%;
+  font-weight: normal;
+  text-transform: lowercase;
+  letter-spacing: 2pt;
+  clear: right;
+}
+
+.bottom p {
+  text-align: left;
+  border-top: 2px solid black;
+  margin-top: 0px;
+  padding-top: 5px;
+  padding-left: 10pt;
+  font-size: 75%;
+  font-weight: normal;
+}
+
+.menu {
+  border: 2px solid black;
+  padding: 10px 10px 10px 10px;
+  font-weight: normal;
+  background-color: #FFFFFF;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.content {
+  padding-left: 10px;
+  font-weight: normal;
+}
+
+.lineitems
+{
+    width:100%;
+    border:1;
+}
+
+.lineitems td
+{
+    padding:5px 5px 5px 5px;
+}
+
+.history
+{
+    border: 2px solid black;
+}

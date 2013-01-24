@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<publishData>
+  <publishProfile publishUrl="\\10.1.17.29\IMETPS_App" deleteExistingFiles="False" ftpAnonymousLogin="False" ftpPassiveMode="True" msdeploySite="IMETPS" msdeploySiteID="" msdeployRemoteSitePhysicalPath="" msdeployAllowUntrustedCertificate="False" msdeploySkipExtraFilesOnServer="True" msdeployMarkAsApp="True" profileName="Profile1" publishMethod="FileSystem" replaceMatchingFiles="True" userName="" savePWD="False" userPWD="" SelectedForPublish="True">
+    <file relUrl="images/filter.gif" publishTime="01/08/2013 12:17:57" />
+    <file relUrl="Scripts/table.js" publishTime="01/08/2013 10:22:06" />
+    <file relUrl="ModUser.aspx" publishTime="01/18/2013 13:41:42" />
+    <file relUrl="bin/IMETPO.pdb" publishTime="01/24/2013 10:48:35" />
+    <file relUrl="bin/IMETPOClasses.dll" publishTime="01/22/2013 11:16:07" />
+    <file relUrl="FASNumbers.aspx" publishTime="01/23/2013 12:17:42" />
+    <file relUrl="images/sorted_down.gif" publishTime="01/08/2013 12:17:43" />
+    <file relUrl="Scripts/jquery-1.4.1.js" publishTime="12/12/2012 09:14:54" />
+    <file relUrl="images/sorted_up.gif" publishTime="01/08/2013 12:17:35" />
+    <file relUrl="images/IMET_logo.png" publishTime="01/18/2013 09:52:29" />
+    <file relUrl="ListVendors.aspx" publishTime="01/23/2013 12:17:42" />
+    <file relUrl="Global.asax" publishTime="12/12/2012 09:14:55" />
+    <file relUrl="ViewRequest.aspx" publishTime="01/23/2013 12:17:43" />
+    <file relUrl="SubmitRequest.aspx" publishTime="01/23/2013 12:17:42" />
+    <file relUrl="Scripts/jquery-1.4.1.min.js" publishTime="12/12/2012 09:14:54" />
+    <file relUrl="Styles/imetps.css" publishTime="01/18/2013 10:42:27" />
+    <file relUrl="SearchRequests.aspx" publishTime="01/23/2013 12:17:42" />
+    <file relUrl="Default.aspx" publishTime="01/23/2013 12:09:29" />
+    <file relUrl="Inventory.aspx" publishTime="01/23/2013 12:17:42" />
+    <file relUrl="Styles/imetps_print.css" publishTime="01/18/2013 11:19:40" />
+    <file relUrl="bin/IMETPOClasses.pdb" publishTime="01/22/2013 11:16:07" />
+    <file relUrl="bin/IMETPO.dll" publishTime="01/24/2013 10:48:35" />
+    <file relUrl="ModifyVendor.aspx" publishTime="01/23/2013 12:17:42" />
+    <file relUrl="Web.config" publishTime="01/24/2013 10:09:05" />
+    <file relUrl="images/sortable.gif" publishTime="01/08/2013 12:17:20" />
+    <file relUrl="table.css" publishTime="01/08/2013 12:22:33" />
+    <file relUrl="Styles/Web.config" publishTime="01/17/2013 11:20:31" />
+    <file relUrl="Scripts/jquery-1.4.1-vsdoc.js" publishTime="12/12/2012 09:14:54" />
+  </publishProfile>
+</publishData>

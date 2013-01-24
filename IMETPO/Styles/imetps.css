@@ -1,0 +1,157 @@
+﻿body {
+  font : 10pt sans-serif;
+  background-color: #D8E2E9;
+}
+
+table {
+  font : 10pt sans-serif;
+}
+
+th {
+  text-align : left;
+} 
+
+h1 {
+  text-align: left;
+  font-size: 150%;
+  font-weight: bold;
+}
+
+.top h1 {
+  text-align: right;
+  border-bottom: 2px solid black;
+  padding-bottom: 0px;
+  font-size: 120%;
+  font-weight: normal;
+  text-transform: lowercase;
+  letter-spacing: 5pt;
+}
+
+.top img {
+  float: left; 
+  padding-bottom: 0px;
+}
+
+.top p {
+  text-align: right;
+  margin-top: -10px;
+  padding-top: 0px;
+  font-size: 90%;
+  font-weight: normal;
+  text-transform: lowercase;
+  letter-spacing: 2pt;
+  clear: right;
+}
+
+.bottom p {
+  text-align: left;
+  border-top: 2px solid black;
+  margin-top: 0px;
+  padding-top: 5px;
+  padding-left: 10pt;
+  font-size: 75%;
+  font-weight: normal;
+}
+
+.fieldhelp {
+  font-size: 9pt;
+  font-style: italic
+}
+
+.fasbreak {
+  font-size: 120%;
+}
+
+.oddrow {
+  background : #EEEEEE;
+}
+
+.evenrow {
+  background : #BBBBBB;
+}
+
+.opened {
+  background: #FFFFC0;
+}
+
+.approved {
+  background : #C0FFC0;
+}
+
+.rejected {
+  background : #F6F6F6;	
+}
+
+.purchased {
+  background : #FFC0FF;
+}
+
+.received {
+  background : #FFC0C0;	
+}
+
+.closed {
+  background : #F6F6F6;	
+}
+
+.ageonewk {
+  background : #99FF66;
+}
+
+.agetwowk {
+  background: #CCFF33;
+}
+
+.agethreewk {
+  background : #FFFF66;
+}
+
+.agefourwk {
+  background : #FF99FF;
+}
+
+.agefivewk {
+  background : #FF0066;
+}
+
+.menu {
+  border: 2px solid black;
+  padding: 10px 10px 10px 10px;
+  font-weight: normal;
+  background-color: #FFFFFF;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.content {
+  padding-left: 10px;
+  font-weight: normal;
+}
+
+.mainmenu td
+{
+    padding: 5px 0px 5px 0px;
+}
+
+.lineitems
+{
+    width:100%;
+    border:1;
+}
+
+.lineitems td
+{
+    padding:5px 5px 5px 5px;
+}
+
+.controls td
+{
+    padding: 5px 10px 5px 10px;
+    border: 0px;
+}
+
+.filters td
+{
+    padding: 0px 10px 0px 10px;
+    border: 0px;
+}

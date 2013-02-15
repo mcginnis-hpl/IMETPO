@@ -117,6 +117,22 @@
                     </td>
                 </tr>
                 <tr>
+                    <td>Contact Name:</td>
+                    <td>
+                        <asp:TextBox ID="txtcontact_name" runat="server"></asp:TextBox></td>
+                        <td>Contact Phone:</td>
+                        <td>
+                            <asp:TextBox ID="txtcontact_phone" runat="server"></asp:TextBox></td>
+                </tr>
+                <tr>
+                    <td>Contact Email:</td>
+                    <td>
+                        <asp:TextBox ID="txtcontact_email" runat="server"></asp:TextBox></td>
+                        <td>Customer Account #:</td>
+                        <td>
+                            <asp:TextBox ID="txtcustomer_account_number" runat="server"></asp:TextBox></td>
+                </tr>
+                <tr>
                     <td colspan="4">
                         &nbsp;
                     </td>
@@ -127,13 +143,13 @@
             <table border="0px" class="controls">
                 <tr>
                     <td>
-                        <asp:LinkButton ID="btnSaveVendor" runat="server" OnClick="btnSaveVendor_Click">Save Changes</asp:LinkButton>
+                        <asp:LinkButton CssClass="squarebutton" ID="btnSaveVendor" runat="server" OnClick="btnSaveVendor_Click"><span>Save Changes</span></asp:LinkButton>
                     </td>
                     <td>
-                        <asp:LinkButton ID="btnClear" runat="server" OnClick="btnClear_Click">Clear all fields and create a new vendor</asp:LinkButton>
+                        <asp:LinkButton CssClass="squarebutton" ID="btnClear" runat="server" OnClick="btnClear_Click"><span>Clear all fields and create a new vendor</span></asp:LinkButton>
                     </td>
                     <td>
-                        <asp:LinkButton ID="btnDelete" runat="server" OnClick="btnDelete_Click">Delete this Vendor</asp:LinkButton>
+                        <asp:LinkButton CssClass="squarebutton" ID="btnDelete" runat="server" OnClick="btnDelete_Click"><span>Delete this Vendor</span></asp:LinkButton>
                     </td>
                 </tr>
             </table>

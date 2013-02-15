@@ -9,6 +9,8 @@ namespace IMETPOClasses
 {
     public class Utils
     {
+        // Return a system setting, which is stored in the system_settings table of the database
+        // Returns an empty string if the value does not exist.
         public static string GetSystemSetting(SqlConnection conn, string tag)
         {
             string ret = string.Empty;

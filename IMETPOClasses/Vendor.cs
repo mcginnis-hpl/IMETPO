@@ -26,6 +26,11 @@ namespace IMETPOClasses
         public string fein;
         public string phone;
         public string fax;
+        public string contact_name;
+        public string contact_phone;
+        public string contact_email;
+        public string customer_account_number;
+
         public VendorState state;
 
         public Vendor()
@@ -42,6 +47,10 @@ namespace IMETPOClasses
             fein = string.Empty;
             phone = string.Empty;
             fax = string.Empty;
+            contact_name = string.Empty;
+            contact_email = string.Empty;
+            contact_phone = string.Empty;
+            customer_account_number = string.Empty;
             state = VendorState.Active;
         }
 
@@ -70,6 +79,10 @@ namespace IMETPOClasses
             cmd.Parameters.Add(new SqlParameter("@inphone", phone));
             cmd.Parameters.Add(new SqlParameter("@infax", fax));
             cmd.Parameters.Add(new SqlParameter("@instate", (int)state));
+            cmd.Parameters.Add(new SqlParameter("@incontact_name", contact_name));
+            cmd.Parameters.Add(new SqlParameter("@incontact_phone", contact_phone));
+            cmd.Parameters.Add(new SqlParameter("@incontact_email", contact_email));
+            cmd.Parameters.Add(new SqlParameter("@incustomer_account_number", customer_account_number));
             cmd.ExecuteNonQuery();
         }
 
@@ -139,6 +152,22 @@ namespace IMETPOClasses
                 if (!reader.IsDBNull(reader.GetOrdinal("state")))
                 {
                     state = (VendorState)int.Parse(reader["state"].ToString());
+                }
+                if (!reader.IsDBNull(reader.GetOrdinal("contact_name")))
+                {
+                    contact_name = reader["contact_name"].ToString();
+                }
+                if (!reader.IsDBNull(reader.GetOrdinal("contact_phone")))
+                {
+                    contact_phone = reader["contact_phone"].ToString();
+                }
+                if (!reader.IsDBNull(reader.GetOrdinal("contact_email")))
+                {
+                    contact_email = reader["contact_email"].ToString();
+                }
+                if (!reader.IsDBNull(reader.GetOrdinal("customer_account_number")))
+                {
+                    customer_account_number = reader["customer_account_number"].ToString();
                 }
             }
             reader.Close();
@@ -210,6 +239,22 @@ namespace IMETPOClasses
                 if (!reader.IsDBNull(reader.GetOrdinal("state")))
                 {
                     v.state = (VendorState)int.Parse(reader["state"].ToString());
+                }
+                if (!reader.IsDBNull(reader.GetOrdinal("contact_name")))
+                {
+                    v.contact_name = reader["contact_name"].ToString();
+                }
+                if (!reader.IsDBNull(reader.GetOrdinal("contact_phone")))
+                {
+                    v.contact_phone = reader["contact_phone"].ToString();
+                }
+                if (!reader.IsDBNull(reader.GetOrdinal("contact_email")))
+                {
+                    v.contact_email = reader["contact_email"].ToString();
+                }
+                if (!reader.IsDBNull(reader.GetOrdinal("customer_account_number")))
+                {
+                    v.customer_account_number = reader["customer_account_number"].ToString();
                 }
                 ret.Add(v);
             }

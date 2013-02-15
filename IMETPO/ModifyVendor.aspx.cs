@@ -17,7 +17,7 @@ namespace IMETPO
             if (!IsAuthenticated)
             {
                 string url = "Default.aspx?RETURNURL=" + Request.Url.ToString();
-                Response.Redirect(url);
+                Response.Redirect(url, false);
                 return;
             }
             try
@@ -75,6 +75,11 @@ namespace IMETPO
             txtPostalCode.Text = v.zip;
             txtState.Text = v.st;
             txtURL.Text = v.url;
+            txtcontact_email.Text = v.contact_email;
+            txtcontact_name.Text = v.contact_name;
+            txtcontact_phone.Text = v.contact_phone;
+            txtcustomer_account_number.Text = v.customer_account_number;
+
             if (v.vendorid == Guid.Empty)
                 lblVendorID.Text = string.Empty;
             else
@@ -101,6 +106,11 @@ namespace IMETPO
                 v.phone = txtPhone.Text;
                 v.st = txtState.Text;
                 v.url = txtURL.Text;
+                v.zip = txtPostalCode.Text;
+                v.contact_name = txtcontact_name.Text;
+                v.contact_email = txtcontact_email.Text;
+                v.contact_phone = txtcontact_phone.Text;
+                v.customer_account_number = txtcustomer_account_number.Text;
                 SqlConnection conn = ConnectToConfigString("imetpsconnection");
                 v.Save(conn);
                 conn.Close();

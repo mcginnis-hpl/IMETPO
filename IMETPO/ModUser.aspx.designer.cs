@@ -148,6 +148,15 @@ namespace IMETPO {
         protected global::System.Web.UI.WebControls.TextBox txtPasswordConfirm;
         
         /// <summary>
+        /// chkDoNotEmail control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.CheckBox chkDoNotEmail;
+        
+        /// <summary>
         /// btnSubmit control.
         /// </summary>
         /// <remarks>
@@ -190,7 +199,7 @@ namespace IMETPO {
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnAddPermission;
+        protected global::System.Web.UI.WebControls.LinkButton btnAddPermission;
         
         /// <summary>
         /// btnRemovePermission control.
@@ -199,7 +208,7 @@ namespace IMETPO {
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnRemovePermission;
+        protected global::System.Web.UI.WebControls.LinkButton btnRemovePermission;
         
         /// <summary>
         /// listUserPermissions control.

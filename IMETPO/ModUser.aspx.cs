@@ -20,7 +20,7 @@ namespace IMETPO
                 if (!IsAuthenticated)
                 {
                     string url = "Default.aspx?RETURNURL=" + Request.Url.ToString();
-                    Response.Redirect(url);
+                    Response.Redirect(url, false);
                     return;
                 }
                 else
@@ -82,6 +82,14 @@ namespace IMETPO
                 string not_salt = inUser.password.Substring(0, inUser.password.Length - fakeSaltString.Length);
                 txtPassword.Text = not_salt;
                 txtPasswordConfirm.Text = not_salt;
+                if (inUser.UserPermissions.Contains(IMETPOClasses.User.Permission.noemail))
+                {
+                    chkDoNotEmail.Checked = true;
+                }
+                else
+                {
+                    chkDoNotEmail.Checked = false;
+                }
             }
             permissions.Visible = !isSelf;
             adminInfo.Visible = !isSelf;
@@ -176,6 +184,14 @@ namespace IMETPO
                 else
                 {
                     listAvailablePermissions.Items.Add(new ListItem("Bypass Approver", ((int)IMETPOClasses.User.Permission.globalapprover).ToString()));
+                }
+                if (working.UserPermissions.Contains(IMETPOClasses.User.Permission.globalrequestor))
+                {
+                    listUserPermissions.Items.Add(new ListItem("Bypass Requestor", ((int)IMETPOClasses.User.Permission.globalrequestor).ToString()));
+                }
+                else
+                {
+                    listAvailablePermissions.Items.Add(new ListItem("Bypass Requestor", ((int)IMETPOClasses.User.Permission.globalrequestor).ToString()));
                 }
             }
             else
@@ -296,17 +312,53 @@ namespace IMETPO
                 working.email = txtEmail.Text;
                 int saltSize = 5;
                 string salt = CreateSalt(saltSize);
-                string passwordHash = CreatePasswordHash(this.txtPassword.Text, salt);
-                working.password = passwordHash;
+                if (!string.IsNullOrEmpty(txtPassword.Text))
+                {
+                    string passwordHash = CreatePasswordHash(this.txtPassword.Text, salt);
+                    working.password = passwordHash;
+                }
                 SqlConnection conn = ConnectToConfigString("imetpsconnection");
                 if (!string.IsNullOrEmpty(comboParentUser.SelectedValue))
                 {
                     working.parentuser = new User();
                     working.parentuser.Load(conn, new Guid(comboParentUser.SelectedValue));
+                    bool circle = false;
+                    User current_user = working.parentuser;
+                    int count = 0;
+                    while (current_user != null)
+                    {
+                        if (current_user.userid == working.userid)
+                        {
+                            circle = true;
+                            break;
+                        }
+                        current_user = current_user.parentuser;
+                        count += 1;
+                        if (count > 100)
+                        {
+                            circle = true;
+                            break;
+                        }
+                    }
+                    if (circle)
+                    {
+                        working.parentuser = null;
+                        ShowAlert("You have attempted to create a circular user relationship.  Please select a different parent for this user.");
+                    }
                 }
                 else
                 {
                     working.parentuser = null;
+                }
+                if (chkDoNotEmail.Checked)
+                {
+                    if (!working.UserPermissions.Contains(IMETPOClasses.User.Permission.noemail))
+                        working.UserPermissions.Add(IMETPOClasses.User.Permission.noemail);
+                }
+                else
+                {
+                    if (working.UserPermissions.Contains(IMETPOClasses.User.Permission.noemail))
+                        working.UserPermissions.Remove(IMETPOClasses.User.Permission.noemail);
                 }
                 working.Save(conn);
                 conn.Close();

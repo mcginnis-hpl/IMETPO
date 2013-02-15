@@ -10,16 +10,32 @@
 <body>
     <form id="form1" runat="server">
     <div class="top">
-        <img src="images/IMET_logo.png" style="width: 20%" alt="IMET: Institute of Marine & Environmental Technology" runat="server" id="logoImage" />
-        <h1>
-            <span id="span_fasnumber" runat="server"></span>
-        </h1>
-        <p>
-            <span id="span_reqnumber" runat="server"></span>
-        </p>
+        <table border="0" width="100%">
+            <tr>
+                <td align="left" style="width:30%">
+                    <img src="images/IMET_logo.png" style="width: 100%" alt="IMET: Institute of Marine & Environmental Technology"
+                        runat="server" id="logoImage" />
+                </td>
+                <td align="right">
+                    <h1>
+                        <span id="span_fasnumber" runat="server"></span>
+                    </h1>
+                    <p>
+                        <span id="span_reqnumber" runat="server"></span>
+                    </p>
+                </td>
+            </tr>
+        </table>
     </div>
     <div id="mainbody" class="content">
         <div id="header" class="menu">
+            <div id="acknowledgement" runat="server">
+                <h3>
+                    Purchase Request Submitted</h3>
+                <p>
+                    Your purchase request has been received. Your purchase request number is <span id="ack_tagnumber"
+                        runat="server"></span>.</p>
+            </div>
             <table border="0px" width="90%">
                 <tr>
                     <td>
@@ -28,11 +44,11 @@
                     </td>
                     <td>
                         <h4>
-                            FAS Number</h4>
+                            Account Number</h4>
                     </td>
                     <td>
                         <h4>
-                            Tag Number</h4>
+                            IPS Number</h4>
                     </td>
                     <td>
                         <h4>
@@ -67,10 +83,34 @@
                     <asp:TableHeaderCell>Quantity Received</asp:TableHeaderCell>
                 </asp:TableHeaderRow>
                 <asp:TableFooterRow>
-                    <asp:TableHeaderCell></asp:TableHeaderCell>
-                    <asp:TableHeaderCell></asp:TableHeaderCell>
-                    <asp:TableHeaderCell></asp:TableHeaderCell>
-                    <asp:TableHeaderCell></asp:TableHeaderCell>
+                    <asp:TableHeaderCell ColumnSpan="4" RowSpan="4">
+                        <table border="0">
+                            <tr id="rowAttachmentHelp" runat="server">
+                                <td>
+                                    <span style="font-size: x-small">To place an order with a quote, please upload a copy
+                                        of the quote here. Complete the order with the following information: Quantity and
+                                        Unit as 1, and enter the total quoted price as the unit price. Write “See attached
+                                        quote” in the Description field.</span>
+                                </td>
+                            </tr>
+                            <tr id="rowAttachment" runat="server">
+                                <td>
+                                    <span id="attachmentlink" runat="server"></span>
+                                </td>
+                            </tr>
+                            <tr id="rowLinkHelp" runat="server">
+                                <td>
+                                    <span style="font-size: x-small">Enter link to shopping cart or items to purchase here.
+                                        Include pricing information in the table above.</span>
+                                </td>
+                            </tr>
+                            <tr id="rowLink" runat="server">
+                                <td>
+                                    <span id="shoppingcartlink" runat="server"></span>
+                                </td>
+                            </tr>
+                        </table>
+                    </asp:TableHeaderCell>
                     <asp:TableHeaderCell>Miscellaneous charges:</asp:TableHeaderCell>
                     <asp:TableHeaderCell>
                         <span id="span_misccharges" runat="server"></span>
@@ -78,10 +118,6 @@
                     <asp:TableHeaderCell></asp:TableHeaderCell>
                 </asp:TableFooterRow>
                 <asp:TableFooterRow>
-                    <asp:TableHeaderCell></asp:TableHeaderCell>
-                    <asp:TableHeaderCell></asp:TableHeaderCell>
-                    <asp:TableHeaderCell></asp:TableHeaderCell>
-                    <asp:TableHeaderCell></asp:TableHeaderCell>
                     <asp:TableHeaderCell>Shipping and Handling charges:</asp:TableHeaderCell>
                     <asp:TableHeaderCell>
                         <span id="span_shippingcharges" runat="server"></span>
@@ -89,10 +125,6 @@
                     <asp:TableHeaderCell></asp:TableHeaderCell>
                 </asp:TableFooterRow>
                 <asp:TableFooterRow>
-                    <asp:TableHeaderCell></asp:TableHeaderCell>
-                    <asp:TableHeaderCell></asp:TableHeaderCell>
-                    <asp:TableHeaderCell></asp:TableHeaderCell>
-                    <asp:TableHeaderCell></asp:TableHeaderCell>
                     <asp:TableHeaderCell>Tax charges:</asp:TableHeaderCell>
                     <asp:TableHeaderCell>
                         <span id="span_taxcharges" runat="server"></span>
@@ -100,10 +132,6 @@
                     <asp:TableHeaderCell></asp:TableHeaderCell>
                 </asp:TableFooterRow>
                 <asp:TableFooterRow>
-                    <asp:TableHeaderCell></asp:TableHeaderCell>
-                    <asp:TableHeaderCell></asp:TableHeaderCell>
-                    <asp:TableHeaderCell></asp:TableHeaderCell>
-                    <asp:TableHeaderCell></asp:TableHeaderCell>
                     <asp:TableHeaderCell>Total order price:</asp:TableHeaderCell>
                     <asp:TableHeaderCell>
                         <span id="span_totalprice" runat="server"></span>
@@ -116,7 +144,7 @@
             <table border="0px" width="90%">
                 <tr>
                     <td>
-                        <strong>Justification:</strong>
+                        <strong>Requestor's Justification:</strong>
                     </td>
                     <td>
                         <span id="span_justification" runat="server"></span>
@@ -132,7 +160,7 @@
                 </tr>
                 <tr>
                     <td>
-                        <strong>Executor Notes:</strong>
+                        <strong>Approver Notes:</strong>
                     </td>
                     <td>
                         <span id="span_executornotes" runat="server"></span>
@@ -149,6 +177,8 @@
             </table>
         </div>
         <div id="history" runat="server" class="menu">
+        </div>
+        <div id="ack_controls" runat="server">
         </div>
     </div>
     </form>

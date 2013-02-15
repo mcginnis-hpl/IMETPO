@@ -166,6 +166,42 @@ namespace IMETPO {
         protected global::System.Web.UI.WebControls.TextBox txtFax;
         
         /// <summary>
+        /// txtcontact_name control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtcontact_name;
+        
+        /// <summary>
+        /// txtcontact_phone control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtcontact_phone;
+        
+        /// <summary>
+        /// txtcontact_email control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtcontact_email;
+        
+        /// <summary>
+        /// txtcustomer_account_number control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtcustomer_account_number;
+        
+        /// <summary>
         /// btnSaveVendor control.
         /// </summary>
         /// <remarks>

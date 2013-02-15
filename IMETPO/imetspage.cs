@@ -15,6 +15,7 @@ namespace IMETPO
 {
     public class imetspage : Page
     {                       
+        // Connect to the database indicated by connectionString
         public SqlConnection Connect(string connectionString)
         {
             SqlConnection ret = null;
@@ -31,17 +32,20 @@ namespace IMETPO
             return ret;
         }
 
+        // Connect to a database that has its connection string listed in web.config
         public SqlConnection ConnectToConfigString(string key)
         {
             string connstring = ConfigurationManager.ConnectionStrings[key].ConnectionString;
             return this.Connect(connstring);
         }
 
+        // Hash a password
         public static string CreatePasswordHash(string pwd, string salt)
         {
             return (FormsAuthentication.HashPasswordForStoringInConfigFile(pwd + salt, "SHA1") + salt);
         }
 
+        // Generate some password salt
         public static string CreateSalt(int size)
         {
             RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider();
@@ -50,6 +54,7 @@ namespace IMETPO
             return Convert.ToBase64String(buff);
         }
 
+        // Return a session value.  This was done to prevent multiple concurrent sessions from mixing and matching objects
         public object GetSessionValue(string key)
         {
             try
@@ -72,32 +77,38 @@ namespace IMETPO
             base.Response.Cache.SetNoStore();
         }
 
+        // Remove a session value
         public void RemoveSessionValue(string key)
         {
             this.Session.Remove(this.Session.SessionID + "-" + key);
         }
 
+        // Set a session value
         public void SetSessionValue(string key, object inobj)
         {
             this.Session[this.Session.SessionID + "-" + key] = inobj;
         }
 
+        // Inserts a javascript popup that shows text msg.
         public virtual void ShowAlert(string msg)
         {
             AddStartupCall("alert('" + msg + "');", "MessagePopUp");
             // base.ClientScript.RegisterStartupScript(this.GetType(), "MessagePopUp", "<script type='text/javascript'>alert('" + msg + "')</script>", false);
         }
 
+        // Add a javascript to the page
         public void AddStartupCall(string call, string name)
         {
             base.ClientScript.RegisterStartupScript(base.GetType(), name, "<script type='text/javascript'>" + call + "</script>", false);
         }
 
+        // Remove a javascript fron the page
         public void RemoveStartupCall(string name)
         {
             base.ClientScript.RegisterStartupScript(base.GetType(), name, string.Empty, true);
         }
 
+        // Return a user object for the currently logged in user (loading it if the user does not exist)
         public User CurrentUser
         {
             get
@@ -118,17 +129,7 @@ namespace IMETPO
                 return p;
             }
         }
-
-        public string CurrentUserEmail
-        {
-            get
-            {
-                if (CurrentUser != null)
-                    return CurrentUser.email;
-                return string.Empty;
-            }
-        }
-
+        
         public bool IsAuthenticated
         {
             get
@@ -141,6 +142,8 @@ namespace IMETPO
         {
             get
             {
+                if (CurrentUser == null)
+                    return false;
                 return CurrentUser.UserPermissions.Contains(IMETPOClasses.User.Permission.admin);
             }
         }
@@ -153,11 +156,13 @@ namespace IMETPO
             }
         }
 
+        // Return a value from web.config
         public string GetApplicationSetting(string inkey)
         {
             return ConfigurationManager.AppSettings[inkey];
         }
 
+        // Dynamically fill out the header values.  This was done to facilitate deploying the application a multiple facilities.
         public void PopulateHeader(HtmlGenericControl title, HtmlGenericControl subtitle)
         {
             string title_text = GetApplicationSetting("applicationTitle");
@@ -170,12 +175,14 @@ namespace IMETPO
             Page.Title = title_text + ": " + subtitle_text;
         }
 
+        // Show the user an error, and then send an email to the developer with error details.
         public void HandleError(Exception ex)
         {
             ShowAlert("An error occurred; the developer has been notified.\n" + ex.Message + "\n" + ex.StackTrace);
             SendErrorNotification(ex.Message, ex.StackTrace);
         }
 
+        // Send an email to the developer, including a stack trace and an exception message.
         public void SendErrorNotification(string msg, string stacktrace)
         {
             try
@@ -195,6 +202,7 @@ namespace IMETPO
             }
         }
 
+        // Send an email from the application one or more users.
         public void SendEmail(string[] to, string[] cc, string[] bcc, string subject, string body)
         {
             string fromaddress = GetApplicationSetting("emailaddress");

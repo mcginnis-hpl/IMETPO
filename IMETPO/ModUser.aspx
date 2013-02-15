@@ -24,8 +24,8 @@
                 <tr><td>Fiscal Year:</td><td>
                     <asp:TextBox ID="txtFiscalYear" runat="server"></asp:TextBox></td></tr>
                     <tr><td>
-                        <asp:LinkButton ID="btnUpdateSystemValues" runat="server" 
-                            onclick="btnUpdateSystemValues_Click">Update System Values</asp:LinkButton></td><td></td></tr>
+                        <asp:LinkButton CssClass="squarebutton" ID="btnUpdateSystemValues" runat="server" 
+                            onclick="btnUpdateSystemValues_Click"><span>Update System Values</span></asp:LinkButton></td><td></td></tr>
             </table>
         </div>
         <div id="userInfo" runat="server" class="menu">
@@ -83,8 +83,12 @@
                         <asp:TextBox ID="txtPasswordConfirm" TextMode="Password" runat="server"></asp:TextBox>
                     </td>
                 </tr>
+                <tr>
+                    <td colspan="2">
+                        <asp:CheckBox ID="chkDoNotEmail" runat="server" Text="Do not send this user email notifications." /></td>
+                </tr>
             </table>
-            <asp:LinkButton ID="btnSubmit" runat="server" OnClick="btnSubmit_Click">Submit</asp:LinkButton>
+            <asp:LinkButton CssClass="squarebutton" ID="btnSubmit" runat="server" OnClick="btnSubmit_Click"><span>Submit</span></asp:LinkButton>
             <asp:HiddenField ID="hiddenUserID" runat="server" />
         </div>
         <div id="permissions" runat="server" class="menu">
@@ -99,14 +103,14 @@
                         <table border="0px">
                             <tr>
                                 <td>
-                                    <asp:Button ID="btnAddPermission" runat="server" Text="->" OnClick="btnAddPermission_Click">
-                                    </asp:Button>
+                                    <asp:LinkButton CssClass="squarebutton" ID="btnAddPermission" runat="server" OnClick="btnAddPermission_Click"><span>-></span>
+                                    </asp:LinkButton>
                                 </td>
                             </tr>
                             <tr>
                                 <td>
-                                    <asp:Button ID="btnRemovePermission" runat="server" Text="<-" OnClick="btnRemovePermission_Click">
-                                    </asp:Button>
+                                    <asp:LinkButton CssClass="squarebutton" ID="btnRemovePermission" runat="server" OnClick="btnRemovePermission_Click"><span><-</span>
+                                    </asp:LinkButton>
                                 </td>
                             </tr>
                         </table>

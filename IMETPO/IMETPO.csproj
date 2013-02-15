@@ -50,12 +50,15 @@
     <Reference Include="System.Web.ApplicationServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="DownloadAttachment.aspx" />
     <Content Include="FASNumbers.aspx" />
     <Content Include="images\filter.gif" />
     <Content Include="images\IMET_logo.png" />
     <Content Include="images\sortable.gif" />
     <Content Include="images\sorted_down.gif" />
     <Content Include="images\sorted_up.gif" />
+    <Content Include="images\square-blue-left.gif" />
+    <Content Include="images\square-blue-right.gif" />
     <Content Include="Inventory.aspx" />
     <Content Include="ListVendors.aspx" />
     <Content Include="ModifyVendor.aspx" />
@@ -88,6 +91,13 @@
     <Compile Include="Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
+    <Compile Include="DownloadAttachment.aspx.cs">
+      <DependentUpon>DownloadAttachment.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="DownloadAttachment.aspx.designer.cs">
+      <DependentUpon>DownloadAttachment.aspx</DependentUpon>
+    </Compile>
     <Compile Include="FASNumbers.aspx.cs">
       <DependentUpon>FASNumbers.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -115,6 +125,7 @@
     <Compile Include="ListVendors.aspx.designer.cs">
       <DependentUpon>ListVendors.aspx</DependentUpon>
     </Compile>
+    <Compile Include="MimeHelper.cs" />
     <Compile Include="ModifyVendor.aspx.cs">
       <DependentUpon>ModifyVendor.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -163,6 +174,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Styles\Web.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="images\Web.config" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />

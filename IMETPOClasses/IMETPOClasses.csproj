@@ -40,6 +40,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AttachedFile.cs" />
     <Compile Include="LineItem.cs" />
     <Compile Include="PurchaseRequest.cs" />
     <Compile Include="RequestTransaction.cs" />

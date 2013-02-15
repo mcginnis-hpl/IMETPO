@@ -15,6 +15,14 @@ namespace IMETPO
     {
         protected void Page_Load(object sender, EventArgs e)
         {
+            if (hiddenDoLogin.Value != null)
+            {
+                if (hiddenDoLogin.Value == "1")
+                {
+                    Login();
+                }
+            }
+            hiddenDoLogin.Value = string.Empty;
             PopulateHeader(appTitle, appSubtitle);
             if (!IsPostBack)
             {
@@ -24,6 +32,7 @@ namespace IMETPO
 
         protected void PopulateMenu(bool forceNotAuthenticated, bool forceAuthenticated)
         {
+            // If the user is not logged in, only show them the login screen.
             if ((!IsAuthenticated && !forceAuthenticated) || forceNotAuthenticated)
             {
                 login.Visible = true;
@@ -35,11 +44,13 @@ namespace IMETPO
                 login.Visible = false;
                 menu.Visible = true;
             }
+            // From here down, the menu is populated based on the user's roles, and the current state of the system
             SqlConnection conn = ConnectToConfigString("imetpsconnection");
             try {                
                 int pendingcount = 0;
                 int rejectedcount = 0;
                 int receivedcount = 0;
+                // This query get the count of all requests for which the user is the requestor and groups them by state
                 string query = "SELECT COUNT(*) AS c, state FROM v_requests_with_executor WHERE userid='" + CurrentUser.userid.ToString() + "' AND permission=0 GROUP BY state";
                 SqlCommand cmd = new SqlCommand()
                 {
@@ -251,7 +262,7 @@ namespace IMETPO
                     passwordMatch = imetspage.CreatePasswordHash(this.txtPassword.Text, salt).Equals(dbPasswordHash);
                     if (passwordMatch)
                     {
-                        FormsAuthenticationTicket tkt = new FormsAuthenticationTicket(1, working.username, DateTime.Now, DateTime.Now.AddMinutes(30.0), this.chkPersistCookie.Checked, "");
+                        FormsAuthenticationTicket tkt = new FormsAuthenticationTicket(1, working.username, DateTime.Now, DateTime.Now.AddYears(1), this.chkPersistCookie.Checked, "");
                         string cookiestr = FormsAuthentication.Encrypt(tkt);
                         HttpCookie ck = new HttpCookie(FormsAuthentication.FormsCookieName, cookiestr);
                         if (this.chkPersistCookie.Checked)
@@ -285,7 +296,7 @@ namespace IMETPO
                 if (Request.Params.GetKey(i) == "RETURNURL")
                 {
                     string url = Request.Params[i];
-                    Response.Redirect(url);
+                    Response.Redirect(url, false);
                     return;
                 }
             }

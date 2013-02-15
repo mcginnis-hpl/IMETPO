@@ -6,77 +6,138 @@
     <title>IMET Purchasing System</title>
     <!-- <link href="Styles/imetps.css?t=<%= DateTime.Now.Ticks %>" type="text/css" rel="stylesheet" /> -->
     <style type="text/css" media="all">
-        body {
-            font : 10pt sans-serif;
+        body
+        {
+            font: 10pt sans-serif;
             background-color: #D8E2E9;
         }
-        table {
-          font : 10pt sans-serif;
-        }
-
-        th {
-          text-align : left;
-        } 
-
-        h1 {
-          text-align: left;
-          font-size: 150%;
-          font-weight: bold;
-        }
-
-        .top h1 {
-          text-align: right;
-          border-bottom: 2px solid black;
-          padding-bottom: 0px;
-          font-size: 120%;
-          font-weight: normal;
-          text-transform: lowercase;
-          letter-spacing: 5pt;
-        }
-
-        .top img {
-          float: left; 
-          padding-bottom: 0px;
-        }
-
-        .top p {
-          text-align: right;
-          margin-top: -10px;
-          padding-top: 0px;
-          font-size: 90%;
-          font-weight: normal;
-          text-transform: lowercase;
-          letter-spacing: 2pt;
-          clear: right;
+        table
+        {
+            font: 10pt sans-serif;
         }
         
-        .menu {
-          border: 2px solid black;
-          padding: 10px 10px 10px 10px;
-          font-weight: normal;
-          background-color: #FFFFFF;
-          margin-top: 5px;
-          margin-bottom: 5px;
+        th
+        {
+            text-align: left;
         }
-
-        .content {
-          padding-left: 10px;
-          font-weight: normal;
+        
+        h1
+        {
+            text-align: left;
+            font-size: 150%;
+            font-weight: bold;
+        }
+        
+        .top h1
+        {
+            text-align: right;
+            border-bottom: 2px solid black;
+            padding-bottom: 0px;
+            font-size: 120%;
+            font-weight: normal;
+            text-transform: lowercase;
+            letter-spacing: 5pt;
+        }
+        
+        .top img
+        {
+            float: left;
+            padding-bottom: 0px;
+        }
+        
+        .top p
+        {
+            text-align: right;
+            margin-top: -10px;
+            padding-top: 0px;
+            font-size: 90%;
+            font-weight: normal;
+            text-transform: lowercase;
+            letter-spacing: 2pt;
+            clear: right;
+        }
+        
+        .menu
+        {
+            border: 2px solid black;
+            padding: 10px 10px 10px 10px;
+            font-weight: normal;
+            background-color: #FFFFFF;
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+        
+        .content
+        {
+            padding-left: 10px;
+            font-weight: normal;
         }
         
         .mainmenu td
         {
             padding: 5px 0px 5px 0px;
         }
-     </style>
+        
+        a.squarebutton
+        {
+            background: transparent url('/images/square-blue-left.gif') no-repeat top left;
+            display: block;
+            float: left;
+            font: normal 12px sans-serif; /* Change 12px as desired */
+            line-height: 15px; /* This value + 4px + 4px (top and bottom padding of SPAN) must equal height of button background (default is 23px) */
+            height: 23px; /* Height of button background height */
+            padding-left: 9px; /* Width of left menu image */
+            text-decoration: none;
+            text-align: center;
+        }
+        
+        a:link.squarebutton, a:visited.squarebutton, a:active.squarebutton
+        {
+            color: #494949; /*button text color*/
+        }
+        
+        a.squarebutton span
+        {
+            background: transparent url('/images/square-blue-right.gif') no-repeat top right;
+            display: block;
+            padding: 4px 9px 4px 0; /*Set 9px below to match value of 'padding-left' value above*/
+        }
+        
+        a.squarebutton:hover
+        {
+            /* Hover state CSS */
+            background-position: bottom left;
+        }
+        
+        a.squarebutton:hover span
+        {
+            /* Hover state CSS */
+            background-position: bottom right;
+            color: black;
+        }
+    </style>
+    <script type="text/javascript" language="javascript">
+        function processPasswordKeypress() {
+            var KeyID = (window.event) ? event.keyCode : e.keyCode;
+            if (KeyID == 13) {
+                var el = document.getElementById("hiddenDoLogin");
+                if (el) {
+                    el.value = "1";
+                    form1.submit();
+                }
+            }
+        }
+    </script>
 </head>
 <body>
     <form id="form1" runat="server">
     <div class="top">
         <h1>
-            <span id="appTitle" runat="server"></span></h1>
+            <span id="appTitle" runat="server"></span>
+        </h1>
         <p>
-            <span id="appSubtitle" runat="server"></span></p>
+            <span id="appSubtitle" runat="server"></span>
+        </p>
     </div>
     <div id="login" runat="server" class="menu">
         <h3>
@@ -99,7 +160,7 @@
                     Password:
                 </td>
                 <td>
-                    <asp:TextBox ID="txtPassword" runat="server" TextMode="Password"></asp:TextBox>
+                    <asp:TextBox ID="txtPassword" runat="server" TextMode="Password" OnKeyPress="processPasswordKeypress()"></asp:TextBox>
                 </td>
             </tr>
             <tr>
@@ -114,7 +175,7 @@
                 <td>
                 </td>
                 <td align="right">
-                    <asp:LinkButton ID="btnLogon" runat="server" OnClick="btnLogon_Click">Sign In</asp:LinkButton>
+                    <asp:LinkButton CssClass="squarebutton" ID="btnLogon" runat="server" OnClick="btnLogon_Click"><span>Sign In</span></asp:LinkButton>
                 </td>
             </tr>
         </table>
@@ -206,6 +267,9 @@
                 </td>
             </tr>
         </table>
+    </div>
+    <div id="hiddenControls">
+        <asp:HiddenField ID="hiddenDoLogin" runat="server" />
     </div>
     </form>
 </body>

@@ -58,6 +58,15 @@ namespace IMETPO {
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl header;
         
         /// <summary>
+        /// title control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl title;
+        
+        /// <summary>
         /// comboRequester control.
         /// </summary>
         /// <remarks>
@@ -74,6 +83,15 @@ namespace IMETPO {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.DropDownList comboFASNumber;
+        
+        /// <summary>
+        /// comboalt_FASnumber control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList comboalt_FASnumber;
         
         /// <summary>
         /// lblTagNumber control.
@@ -137,6 +155,15 @@ namespace IMETPO {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtVendorDescription;
+        
+        /// <summary>
+        /// vendorDetailsHeader control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl vendorDetailsHeader;
         
         /// <summary>
         /// vendorDetails control.
@@ -220,6 +247,42 @@ namespace IMETPO {
         protected global::System.Web.UI.WebControls.TextBox txtVendorFax;
         
         /// <summary>
+        /// txtVendorcontact_name control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtVendorcontact_name;
+        
+        /// <summary>
+        /// txtVendorcontact_phone control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtVendorcontact_phone;
+        
+        /// <summary>
+        /// txtVendorcontact_email control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtVendorcontact_email;
+        
+        /// <summary>
+        /// txtVendor_customer_account_number control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtVendor_customer_account_number;
+        
+        /// <summary>
         /// tblLineItems control.
         /// </summary>
         /// <remarks>
@@ -274,15 +337,6 @@ namespace IMETPO {
         protected global::System.Web.UI.WebControls.TextBox txtUOM_new;
         
         /// <summary>
-        /// txtLineItemDesc_new control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtLineItemDesc_new;
-        
-        /// <summary>
         /// txtLineItemNumber_new control.
         /// </summary>
         /// <remarks>
@@ -290,6 +344,15 @@ namespace IMETPO {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtLineItemNumber_new;
+        
+        /// <summary>
+        /// txtLineItemDesc_new control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtLineItemDesc_new;
         
         /// <summary>
         /// txtUnitPrice_new control.
@@ -310,6 +373,24 @@ namespace IMETPO {
         protected global::System.Web.UI.WebControls.Label lblTotalPrice_new;
         
         /// <summary>
+        /// newlineQuantityReceived control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TableCell newlineQuantityReceived;
+        
+        /// <summary>
+        /// newlineToBeInventoried control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TableCell newlineToBeInventoried;
+        
+        /// <summary>
         /// btnAddNewLineItem control.
         /// </summary>
         /// <remarks>
@@ -317,6 +398,78 @@ namespace IMETPO {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.LinkButton btnAddNewLineItem;
+        
+        /// <summary>
+        /// attachments control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl attachments;
+        
+        /// <summary>
+        /// rowUploadHelp control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlTableRow rowUploadHelp;
+        
+        /// <summary>
+        /// filedownloadlink control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl filedownloadlink;
+        
+        /// <summary>
+        /// rowUpload control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlTableRow rowUpload;
+        
+        /// <summary>
+        /// uploadAttachment control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.FileUpload uploadAttachment;
+        
+        /// <summary>
+        /// btnUpload control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnUpload;
+        
+        /// <summary>
+        /// cartlink control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl cartlink;
+        
+        /// <summary>
+        /// txtCartLink control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtCartLink;
         
         /// <summary>
         /// txtMiscCharges control.

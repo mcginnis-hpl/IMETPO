@@ -9,6 +9,7 @@ namespace IMETPOClasses
 {
     public class RequestTransaction
     {
+        // The transaction type maps to an integer, which is what is stored in the database.
         public enum TransactionType
         {
             Created = 0,
@@ -22,6 +23,7 @@ namespace IMETPOClasses
             Received = 128
         }
 
+        // A function to map the state to a string, for display purposes.
         public static string TransactionTypeString(TransactionType inType)
         {
             switch (inType)
@@ -53,6 +55,7 @@ namespace IMETPOClasses
         public string username;
         public DateTime timestamp;
         public string comments;
+        // This flag is false until the transaction is saved (when the request is saved); then it is flagged as true.
         public bool isLogged;
 
         public RequestTransaction()

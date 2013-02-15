@@ -16,7 +16,7 @@ namespace IMETPO
             if (!IsAuthenticated)
             {
                 string url = "Default.aspx?RETURNURL=" + Request.Url.ToString();
-                Response.Redirect(url);
+                Response.Redirect(url, false);
                 return;
             }
             try {
@@ -46,6 +46,7 @@ namespace IMETPO
                 PurchaseRequest working = new PurchaseRequest();
                 working.Load(conn, requestid);
                 working.state = PurchaseRequest.RequestState.pending;
+                working.SetLineItemState(LineItem.LineItemState.pending);
                 working.history.Add(new RequestTransaction(RequestTransaction.TransactionType.Modified, CurrentUser.userid, CurrentUser.username, "Undeleted by administrator."));
                 working.Save(conn);
             }
@@ -292,15 +293,15 @@ namespace IMETPO
                 PurchaseRequest.RequestState curr_state = (PurchaseRequest.RequestState)int.Parse(reader["status"].ToString());
                 html += "<td>" + PurchaseRequest.GetRequestStateString(curr_state) + "</td>";
                 html += "<td>" + reader["description"].ToString() + "</td>";
-                html += "<td><a href='SubmitRequest.aspx?REQUESTID=" + reader["requestid"].ToString();
+                html += "<td><a class='squarebutton' href='SubmitRequest.aspx?REQUESTID=" + reader["requestid"].ToString();
                 if (!string.IsNullOrEmpty(linkmode))
                 {
                     html += "&MODE=" + linkmode;
                 }
-                html += "'>View</a>";
+                html += "'><span>View</span></a>";
                 if (curr_state == PurchaseRequest.RequestState.deleted && UserIsAdministrator)
                 {
-                    html += "&nbsp;&nbsp;&nbsp;<a href='javascript:undelete(\"" + reader["requestid"].ToString() + "\")'>Undelete</a>";
+                    html += "&nbsp;&nbsp;&nbsp;<a class='squarebutton' href='javascript:undelete(\"" + reader["requestid"].ToString() + "\")'><span>Undelete</span></a>";
                 }
                 html += "</td>";
                 html += "</tr>";

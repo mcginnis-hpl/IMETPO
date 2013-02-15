@@ -53,7 +53,7 @@
                 </tr>
             </table>
             <br />
-            <asp:LinkButton ID="btnSearch" runat="server" onclick="btnSearch_Click">Search</asp:LinkButton>
+            <asp:LinkButton CssClass="squarebutton" ID="btnSearch" runat="server" onclick="btnSearch_Click"><span>Search</span></asp:LinkButton>
         </div>
         <div id="resultspane" class="menu">
             <h3>Results</h3>

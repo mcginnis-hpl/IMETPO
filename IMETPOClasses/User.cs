@@ -9,6 +9,7 @@ namespace IMETPOClasses
 {
     public class FASPermission
     {
+        // This class holds a mapping between an FRS number and a user id (the same data as the users2fas table in the database)
         public Guid userid;
         public User.Permission permission;
 
@@ -21,10 +22,31 @@ namespace IMETPOClasses
 
     public class FASNumber
     {
+        // The FRS Number in question
         public string Number;
+        // A description of this number
         public string Description;
+        // The disabled flag
         public bool Disabled;
+        // A mapping from userids to permissions
         public List<FASPermission> Permissions;
+
+        public Guid OwnerID
+        {
+            get
+            {
+                Guid ret = Guid.Empty;
+                foreach (FASPermission p in Permissions)
+                {
+                    if (p.permission == User.Permission.owner)
+                    {
+                        ret = p.userid;
+                        break;
+                    }
+                }
+                return ret;
+            }
+        }
 
         public FASNumber()
         {
@@ -99,8 +121,10 @@ namespace IMETPOClasses
         }
     }
 
+    // Holds data about a user.
     public class User
     {
+        // Permissions map to an integer, which is stored in the database
         public enum Permission
         {
             requestor = 0,
@@ -109,9 +133,13 @@ namespace IMETPOClasses
             approver = 8,
             admin = 16,
             inventory = 32,
-            globalapprover = 64
+            globalapprover = 64,
+            noemail = 128,
+            globalrequestor = 256
         }
+        // A list of permissions that he user possesses
         public List<Permission> UserPermissions;
+
         public string username;
         public Guid userid;
         public string email;
@@ -128,6 +156,7 @@ namespace IMETPOClasses
             parentuser = null;
         }
 
+        // Return a list of all users that possess permission inPermission
         public static List<User> LoadUsersWithPermission(SqlConnection conn, User.Permission inPermission)
         {
             SqlCommand cmd = new SqlCommand()
@@ -151,15 +180,53 @@ namespace IMETPOClasses
             return ret;
         }
 
-        public List<FASNumber> LoadFASNumbers(SqlConnection conn, User.Permission inpermission)
+        // Return a list of all users that possess permission inPermission
+        public static List<User> LoadAllUsers(SqlConnection conn)
         {
             SqlCommand cmd = new SqlCommand()
             {
                 Connection = conn,
                 CommandType = CommandType.StoredProcedure,
-                CommandText = "sp_lookupfasnumbers"
+                CommandText = "sp_LoadAllUsers"
             };
-            cmd.Parameters.Add(new SqlParameter("@inuserid", userid));
+            SqlDataReader reader = cmd.ExecuteReader();
+            List<User> ret = new List<User>();
+            while (reader.Read())
+            {
+                User u = new User();
+                u.username = reader["username"].ToString();
+                u.userid = new Guid(reader["userid"].ToString());
+                u.email = reader["email"].ToString();
+                ret.Add(u);
+            }
+            reader.Close();
+            return ret;
+        }
+
+        // Load all of the FRS numbers for which this user has permission inpermission
+        public List<FASNumber> LoadFASNumbers(SqlConnection conn, User.Permission inpermission)
+        {
+            SqlCommand cmd = null;
+            if (inpermission == Permission.globalrequestor)
+            {
+                cmd = new SqlCommand()
+                {
+                    Connection = conn,
+                    CommandType = CommandType.StoredProcedure,
+                    CommandText = "sp_lookupallfasnumbers"
+                };
+            }
+            else
+            {
+                cmd = new SqlCommand()
+                {
+                    Connection = conn,
+                    CommandType = CommandType.StoredProcedure,
+                    CommandText = "sp_lookupfasnumbers"
+                };
+                cmd.Parameters.Add(new SqlParameter("@inuserid", userid));
+            }
+            
             SqlDataReader reader = cmd.ExecuteReader();
             List<FASNumber> ret = new List<FASNumber>();
             while (reader.Read())
@@ -355,6 +422,7 @@ namespace IMETPOClasses
             }
         }
 
+        // Map permission value to string, for display purposes.
         public static string GetPermissionString(Permission inPerm)
         {
             switch (inPerm)
@@ -373,6 +441,10 @@ namespace IMETPOClasses
                     return "Approver";
                 case Permission.globalapprover:
                     return "Bypass Approver";
+                case Permission.globalrequestor:
+                    return "Bypass Requestor";
+                case Permission.noemail:
+                    return "No Email";
             }
             return string.Empty;
         }

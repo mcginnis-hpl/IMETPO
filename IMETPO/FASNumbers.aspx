@@ -34,13 +34,13 @@
         </div>
         <div id="main" class="menu">
             <h3>
-                Manage FRS Numbers</h3>
+                Manage Account Numbers</h3>
             <asp:Table ID="tblFRSNumbers" runat="server">
                 <asp:TableHeaderRow>
                     <asp:TableHeaderCell>Account Number</asp:TableHeaderCell>
                     <asp:TableHeaderCell>Description</asp:TableHeaderCell>
                     <asp:TableHeaderCell>Account Owner</asp:TableHeaderCell>
-                    <asp:TableHeaderCell>Disabled</asp:TableHeaderCell>
+                    <asp:TableHeaderCell>Expire</asp:TableHeaderCell>
                     <asp:TableHeaderCell>Action</asp:TableHeaderCell>
                 </asp:TableHeaderRow>
                 <asp:TableRow ID="newrow">
@@ -55,7 +55,7 @@
                     <asp:TableCell>
                         <asp:CheckBox ID="chkFRSDisabled_new" runat="server" /></asp:TableCell>
                     <asp:TableCell>
-                        <a href="javascript:submitFASNumber('new')">Add FRS Number</a></asp:TableCell>
+                        <a class="squarebutton" href="javascript:submitFASNumber('new')"><span>Add FRS Number</span></a></asp:TableCell>
                 </asp:TableRow>
             </asp:Table>
             <asp:HiddenField ID="hiddenUpdateNumber" runat="server" />
@@ -84,22 +84,26 @@
                         <asp:ListBox ID="listAvailableRequestors" runat="server"></asp:ListBox>
                     </td>
                     <td>
-                        <asp:LinkButton ID="btnAddRequestor" runat="server" OnClick="btnAddRequestor_Click">Add Requestor-></asp:LinkButton><br />
-                        <asp:LinkButton ID="btnRemoveRequestor" runat="server" OnClick="btnRemoveRequestor_Click"><- Remove Requestor</asp:LinkButton>
+                        <table border="0">
+                        <tr><td><asp:LinkButton CssClass="squarebutton" ID="btnAddRequestor" runat="server" OnClick="btnAddRequestor_Click" Width="140"><span>Add Requestor-></span></asp:LinkButton></td></tr>
+                        <tr><td><asp:LinkButton CssClass="squarebutton" ID="btnRemoveRequestor" runat="server" OnClick="btnRemoveRequestor_Click" Width="140"><span><- Remove Requestor</span></asp:LinkButton></td></tr>
+                        </table>
                     </td>
                     <td>
                         <asp:ListBox ID="listRequestors" runat="server"></asp:ListBox>
                     </td>
                     <td>
-                        <asp:LinkButton ID="btnAddApprover" runat="server" OnClick="btnAddApprover_Click">Add Approver-></asp:LinkButton><br />
-                        <asp:LinkButton ID="btnRemoveApprover" runat="server" OnClick="btnRemoveApprover_Click"><- Remove Approver</asp:LinkButton>
+                        <table border="0">
+                        <tr><td><asp:LinkButton CssClass="squarebutton" ID="btnAddApprover" runat="server" OnClick="btnAddApprover_Click" Width="140"><span>Add Approver-></span></asp:LinkButton></td></tr>
+                        <tr><td><asp:LinkButton CssClass="squarebutton" ID="btnRemoveApprover" runat="server" OnClick="btnRemoveApprover_Click" Width="140"><span><- Remove Approver</span></asp:LinkButton></td></tr>
+                        </table>                        
                     </td>
                     <td>
                         <asp:ListBox ID="listApprovers" runat="server"></asp:ListBox>
                     </td>
                 </tr>
             </table>
-            <asp:LinkButton ID="btnSavePermissionsChanges" runat="server" OnClick="btnSavePermissionsChanges_Click">Save Changes</asp:LinkButton>
+            <asp:LinkButton CssClass="squarebutton" ID="btnSavePermissionsChanges" runat="server" OnClick="btnSavePermissionsChanges_Click"><span>Save Changes</span></asp:LinkButton><br />
         </div>
     </div>
     </form>

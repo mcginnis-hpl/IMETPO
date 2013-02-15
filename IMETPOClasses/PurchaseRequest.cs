@@ -9,6 +9,7 @@ namespace IMETPOClasses
 {
     public class PurchaseRequest
     {
+        // The request state maps to an int, which is what is stored in the database.  I formulated the values so that they could be OR'd together...force of habit, you would never need to do that.
         public enum RequestState
         {
             opened = -1,
@@ -21,6 +22,8 @@ namespace IMETPOClasses
             closed = 64
         }
 
+        // A convenience function to return the first user that execute a transaction of type inType
+        // In reality, this is just used to find the person who opened the request
         public Guid GetTransactionUser(RequestTransaction.TransactionType inType)
         {
             Guid ret = Guid.Empty;
@@ -34,6 +37,7 @@ namespace IMETPOClasses
             return ret;
         }
 
+        // Map the state to a string, for display purposes
         public static string GetRequestStateString(RequestState inPerm)
         {
             switch (inPerm)
@@ -58,10 +62,14 @@ namespace IMETPOClasses
             return string.Empty;
         }
         public Guid requestid;
+        // The owner; surprisingly, this is not often used, as the history tracks who did what with the request.
         public User userid;
+        // This is currently used for nothing; holdover from the original.
         public string neededby;
         public RequestState state;
+        // The vendor for this purchase
         public Vendor vendorid;
+        // This is labeled "justification" on the form
         public string description;
         public string requestornotes;
         public string executornotes;
@@ -73,6 +81,10 @@ namespace IMETPOClasses
         public float taxcharge;
         public float misccharge;
         public FASNumber fasnumber;
+        public FASNumber alt_fasnumber;
+        public List<AttachedFile> attachments;
+        public string shoppingcarturl;
+
         public string fasnumberstring
         {
             get
@@ -84,9 +96,32 @@ namespace IMETPOClasses
                 return fasnumber.Number;
             }
         }
+
+        public string alt_fasnumberstring
+        {
+            get
+            {
+                if (alt_fasnumber == null)
+                {
+                    return string.Empty;
+                }
+                return alt_fasnumber.Number;
+            }
+        }
         public List<LineItem> lineitems;
         public List<RequestTransaction> history;
         public string requisitionnumber;
+
+        // This is a convenience function that mass-updates the line item state, ignoring deleted line items and items that need to be inventoried.
+        public void SetLineItemState(LineItem.LineItemState inState)
+        {
+            foreach (LineItem li in lineitems)
+            {
+                if (li.state == LineItem.LineItemState.deleted || li.state == LineItem.LineItemState.inventory)
+                    continue;
+                li.state = inState;
+            }
+        }
 
         public PurchaseRequest()
         {
@@ -106,9 +141,12 @@ namespace IMETPOClasses
             taxcharge = 0;
             misccharge = 0;
             fasnumber = null;
+            alt_fasnumber = null;
             lineitems = new List<LineItem>();            
             history = new List<RequestTransaction>();
             requisitionnumber = string.Empty;
+            shoppingcarturl = string.Empty;
+            attachments = new List<AttachedFile>();
         }
 
         public void Save(SqlConnection conn)
@@ -142,7 +180,12 @@ namespace IMETPOClasses
             cmd.Parameters.Add(new SqlParameter("@intaxcharge", taxcharge));
             cmd.Parameters.Add(new SqlParameter("@inmisccharge", misccharge));
             cmd.Parameters.Add(new SqlParameter("@infasnumber", fasnumber.Number));
+            if (alt_fasnumber != null)
+            {
+                cmd.Parameters.Add(new SqlParameter("@inalt_fasnumber", alt_fasnumber.Number));
+            }
             cmd.Parameters.Add(new SqlParameter("@inrequisitionnumber", requisitionnumber));
+            cmd.Parameters.Add(new SqlParameter("@inshoppingcarturl", shoppingcarturl));
 
             cmd.ExecuteNonQuery();
             foreach (LineItem li in lineitems)
@@ -155,6 +198,10 @@ namespace IMETPOClasses
                 {
                     t.Save(conn, requestid);
                 }
+            }
+            foreach (AttachedFile f in attachments)
+            {
+                f.Save(conn, requestid);
             }
         }
         public void Load(SqlConnection conn, Guid inid)
@@ -170,7 +217,7 @@ namespace IMETPOClasses
             Guid newuserid = Guid.Empty;
             Guid newvendorid = Guid.Empty;
             string tmp_fasnumber = string.Empty;
-
+            string tmp_alt_fasnumber = string.Empty;
             while (reader.Read())
             {
                 if (!reader.IsDBNull(reader.GetOrdinal("id")))
@@ -237,9 +284,17 @@ namespace IMETPOClasses
                 {
                     tmp_fasnumber = reader["fasnumber"].ToString();
                 }
+                if (!reader.IsDBNull(reader.GetOrdinal("alt_fasnumber")))
+                {
+                    tmp_alt_fasnumber = reader["alt_fasnumber"].ToString();
+                }
                 if (!reader.IsDBNull(reader.GetOrdinal("requisitionnumber")))
                 {
                     requisitionnumber = reader["requisitionnumber"].ToString();
+                }
+                if (!reader.IsDBNull(reader.GetOrdinal("shoppingcarturl")))
+                {
+                    shoppingcarturl = reader["shoppingcarturl"].ToString();
                 }
             }
             reader.Close();
@@ -258,6 +313,11 @@ namespace IMETPOClasses
             {
                 fasnumber = new FASNumber();
                 fasnumber.Load(conn, tmp_fasnumber);
+            }
+            if (!string.IsNullOrEmpty(tmp_alt_fasnumber))
+            {
+                alt_fasnumber = new FASNumber();
+                alt_fasnumber.Load(conn, tmp_alt_fasnumber);
             }
             cmd = new SqlCommand()
             {
@@ -313,39 +373,73 @@ namespace IMETPOClasses
                 }
             }
             reader.Close();
+            cmd = new SqlCommand()
+            {
+                Connection = conn,
+                CommandText = "sp_loadattachedfiles",
+                CommandType = CommandType.StoredProcedure
+            };
+            cmd.Parameters.Add(new SqlParameter("@inrequestid", inid));
+            reader = cmd.ExecuteReader();
+            attachments = new List<AttachedFile>();
+            while (reader.Read())
+            {
+                AttachedFile f = new AttachedFile();
+                if (!reader.IsDBNull(reader.GetOrdinal("uploadedfile_id")))
+                {
+                    f.ID = new Guid(reader["uploadedfile_id"].ToString());
+                }
+                if (!reader.IsDBNull(reader.GetOrdinal("filepath")))
+                {
+                    f.Path = reader["filepath"].ToString();
+                }
+                if (!reader.IsDBNull(reader.GetOrdinal("filename")))
+                {
+                    f.Filename = reader["filename"].ToString();
+                }
+                attachments.Add(f);
+            }
+            reader.Close();
         }
 
+        // Generate a new tag number, based on the current fiscal year.
+        // NOTE: There is a timing issue here, wherein two requests could conceivably generate the same number.  
+        // If it actually ever happens, I will devise a locking strategy.
         public static string GenerateTagNumber(SqlConnection conn, string username)
         {            
-            string fiscal_year = Utils.GetSystemSetting(conn, "fiscalyear") + "-";
-            SqlCommand cmd = new SqlCommand()
+            // Fetch the fiscal year (stored in web.config)
+            SqlCommand cmd = null;
+
+            cmd = new SqlCommand()
             {
                 Connection = conn,
                 CommandText = "sp_getlasttagnumber",
                 CommandType = CommandType.StoredProcedure
             };
-            cmd.Parameters.Add(new SqlParameter("@inprefix", fiscal_year));
             SqlDataReader reader = cmd.ExecuteReader();
             string last_tag_number = string.Empty;
+            // Read the last tag number
             while (reader.Read())
             {
                 if(!reader.IsDBNull(reader.GetOrdinal("tagnumber")))
                     last_tag_number = reader["tagnumber"].ToString();
             }   
             reader.Close();     
+            // If the last tag number is empty, then start with 000
             if(string.IsNullOrEmpty(last_tag_number))
             {
-                return fiscal_year + "000";
+                return "0001";
             }
             else
             {
-                char[] delim = {'-'};
-                string[] tokens = last_tag_number.Split(delim);
-                int last_val = int.Parse(tokens[1]) + 1;
-                return fiscal_year + string.Format("{0:000}", last_val);
+                // Otherwise, split the last tag number
+                int new_val = int.Parse(last_tag_number) + 1;
+                // Increment by 1
+                return string.Format("{0:0000}", new_val);
             }
         }
 
+        // Return the sum of the line item prices (excluding additional charges)
         public float LineItemTotal
         {
             get
@@ -353,12 +447,14 @@ namespace IMETPOClasses
                 float ret = 0;
                 foreach (LineItem li in lineitems)
                 {
-                    ret += li.TotalPrice;
+                    if(li.state != LineItem.LineItemState.deleted)
+                        ret += li.TotalPrice;
                 }
                 return ret;
             }
         }
 
+        // Return the price of the entire request, including additional charges.
         public float TotalPrice
         {
             get
@@ -366,7 +462,8 @@ namespace IMETPOClasses
                 float ret = misccharge + shipcharge + taxcharge;
                 foreach (LineItem li in lineitems)
                 {
-                    ret += li.TotalPrice;
+                    if (li.state != LineItem.LineItemState.deleted)
+                        ret += li.TotalPrice;
                 }
                 return ret;
             }

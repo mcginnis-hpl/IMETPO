@@ -17,7 +17,7 @@ namespace IMETPO
             if (!IsAuthenticated)
             {
                 string url = "Default.aspx?RETURNURL=" + Request.Url.ToString();
-                Response.Redirect(url);
+                Response.Redirect(url, false);
                 return;
             }
             try
@@ -66,8 +66,7 @@ namespace IMETPO
                 {
                     if (li.lineitemid == lineitemid)
                     {
-                        li.inventoryMD = false;
-                        li.inventoryIMET = false;
+                        li.state = LineItem.LineItemState.closed;                        
                         req.history.Add(new RequestTransaction(RequestTransaction.TransactionType.Modified, CurrentUser.userid, CurrentUser.username, "Line item " + li.itemnumber + " inventoried."));
                         req.Save(conn);
                     }
@@ -90,7 +89,7 @@ namespace IMETPO
                 }
                 else
                 {
-                    query += " AND";
+                    query += " OR";
                 }
                 init = true;
                 query += " inventoryimet=1";
@@ -103,7 +102,7 @@ namespace IMETPO
                 }
                 else
                 {
-                    query += " AND";
+                    query += " OR";
                 }
                 init = true;
                 query += " inventorymd=1";
@@ -155,8 +154,8 @@ namespace IMETPO
                 }
                 html += "<td>" + reader["qtyreceived"].ToString() + "</td>";
                 html += "<td>" + reader["unitprice"].ToString() + "</td>";
-                html += "<td><a href='SubmitRequest.aspx?REQUESTID=" + reader["requestid"].ToString() + "'>View</a>";
-                html += "&nbsp;&nbsp;&nbsp;<a href='javascript:FlagAsInventoried(\"" + reader["lineitemid"].ToString() + "\")'>Mark as Inventoried</a>";
+                html += "<td><a class='squarebutton' href='SubmitRequest.aspx?REQUESTID=" + reader["requestid"].ToString() + "'><span>View</span></a>";
+                html += "&nbsp;&nbsp;&nbsp;<a class='squarebutton' href='javascript:FlagAsInventoried(\"" + reader["lineitemid"].ToString() + "\")'><span>Mark as Inventoried</span></a>";
                 html += "</td>";
                 html += "</tr>";
             }

@@ -34,7 +34,7 @@ namespace IMETPO
             if (!IsAuthenticated)
             {
                 string url = "Default.aspx?RETURNURL=" + Request.Url.ToString();
-                Response.Redirect(url);
+                Response.Redirect(url, false);
                 return;
             }
             try

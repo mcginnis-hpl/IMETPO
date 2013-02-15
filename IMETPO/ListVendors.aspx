@@ -29,7 +29,7 @@
                         <asp:TableHeaderCell>URL</asp:TableHeaderCell>
                     </asp:TableHeaderRow>
                 </asp:Table>
-                <a href="ModifyVendor.aspx">Add a new vendor</a>
+                <a href="ModifyVendor.aspx" class="squarebutton"><span>Add a new vendor</span></a><br />
             </div>
     </div>
     </form>

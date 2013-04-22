@@ -18,11 +18,11 @@
 </head>
 <body>
     <form id="form1" runat="server">
-    <div class="top">
-        <h1>
-            <span id="appTitle" runat="server"></span></h1>
-        <p>
-            <span id="appSubtitle" runat="server"></span></p>
+    <div id="headerTitle" class="banner" runat="server">
+        <img class="logo" src="images/IMET_logo.png" width="398" height="72" alt="IMET" />
+    </div>
+    <div id="title" class="title">
+        <center><span id="titlespan" runat="server"></span></center>
     </div>
     <div id="mainbody" class="content">
         <div id="backlink">
@@ -50,10 +50,9 @@
                     <td>Date: 
                         <asp:TextBox ID="txtStartDate" runat="server"></asp:TextBox> to 
                         <asp:TextBox ID="txtEndDate" runat="server"></asp:TextBox></td>
+                        <td><asp:LinkButton CssClass="squarebutton" ID="btnSearch" runat="server" onclick="btnSearch_Click"><span>Search</span></asp:LinkButton></td>
                 </tr>
             </table>
-            <br />
-            <asp:LinkButton CssClass="squarebutton" ID="btnSearch" runat="server" onclick="btnSearch_Click"><span>Search</span></asp:LinkButton>
         </div>
         <div id="resultspane" class="menu">
             <h3>Results</h3>

@@ -4,6 +4,9 @@ using System.Web;
 
 namespace IMETPO
 {
+    /// <summary>
+    /// This class is used to figure out the MIME type of a file from its extension.
+    /// </summary>
     public static class MimeHelper
     {
         private static readonly object Locker = new object();

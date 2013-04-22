@@ -8,6 +8,10 @@ using System.IO;
 
 namespace IMETPOClasses
 {
+    /// <summary>
+    /// The AttachedFile class encapsulates the metadata and methods for loading and saving a file attached to a purchase request.
+    /// 
+    /// </summary>
     public class AttachedFile
     {
         public string Path;
@@ -20,6 +24,11 @@ namespace IMETPOClasses
             Filename = string.Empty;
         }
 
+        /// <summary>
+        /// Load the metadata for an attached file from the source database.
+        /// </summary>
+        /// <param name="conn">An open connection to the IMETPS database.</param>
+        /// <param name="inid">The GUID of the attached file to be loaded.</param>
         public void Load(SqlConnection conn, Guid inid)
         {
             SqlCommand cmd = new SqlCommand()
@@ -48,6 +57,11 @@ namespace IMETPOClasses
             reader.Close();
         }
 
+        /// <summary>
+        /// Save the metadata associated with an attached file.
+        /// </summary>
+        /// <param name="conn">An open connection to the IMETPS database.</param>
+        /// <param name="requestid">The ID of the attached file to be saved.</param>
         public void Save(SqlConnection conn, Guid requestid)
         {
             if (ID == Guid.Empty)
@@ -65,6 +79,28 @@ namespace IMETPOClasses
             cmd.ExecuteNonQuery();
         }
 
+        /// <summary>
+        /// Delete the saved local (server) copy of an attached file.
+        /// </summary>
+        public void DeleteLocalCopy()
+        {
+            try
+            {
+                File.Delete(Path);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+            }
+        }
+
+        /// <summary>
+        /// Return an array of bytes containing the entire attached file.
+        /// </summary>
+        /// <returns></returns>
         public byte[] GetBytes()
         {
             FileStream fs = null;

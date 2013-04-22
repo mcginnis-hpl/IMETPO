@@ -58,6 +58,15 @@ namespace IMETPO {
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl span_reqnumber;
         
         /// <summary>
+        /// top_requisition control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl top_requisition;
+        
+        /// <summary>
         /// acknowledgement control.
         /// </summary>
         /// <remarks>

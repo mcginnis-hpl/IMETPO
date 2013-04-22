@@ -7,14 +7,20 @@ using System.Data.SqlClient;
 
 namespace IMETPOClasses
 {
+    /// <summary>
+    /// A class encapsulating all of the data about a Vendor.
+    /// </summary>
     public class Vendor
     {
+        // The state of the vendor; currently, there are only two.
         public enum VendorState
         {
             Active = 0,
             Deleted = 2
         };
+        // A unique identifier for this vendor.
         public Guid vendorid;
+        // All of the various contact fields for the vendor.
         public string vendorname;
         public string url;
         public string description;
@@ -54,6 +60,10 @@ namespace IMETPOClasses
             state = VendorState.Active;
         }
 
+        /// <summary>
+        /// Save the information about the vendor to the database.
+        /// </summary>
+        /// <param name="conn">An open connection to the IMETPS database.</param>
         public void Save(SqlConnection conn)
         {
             if (vendorid == Guid.Empty)
@@ -86,6 +96,11 @@ namespace IMETPOClasses
             cmd.ExecuteNonQuery();
         }
 
+        /// <summary>
+        /// Load a vendor from the database.
+        /// </summary>
+        /// <param name="conn">An open connection to the IMETPS database.</param>
+        /// <param name="inid">The ID of the vendor to load.</param>
         public void Load(SqlConnection conn, Guid inid)
         {
             SqlCommand cmd = new SqlCommand()
@@ -173,6 +188,11 @@ namespace IMETPOClasses
             reader.Close();
         }
 
+        /// <summary>
+        /// Load all of the vendors that are in the system.
+        /// </summary>
+        /// <param name="conn">An open connection to the IMETPS database.</param>
+        /// <returns>A list of all vendors currently in the system</returns>
         public static List<Vendor> LoadAllVendors(SqlConnection conn)
         {
             SqlCommand cmd = new SqlCommand()

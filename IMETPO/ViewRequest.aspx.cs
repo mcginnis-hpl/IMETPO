@@ -10,6 +10,9 @@ using System.Data.SqlClient;
 
 namespace IMETPO
 {
+    /// <summary>
+    /// ViewRequest is the print version of the Purchase Request page.  
+    /// </summary>
     public partial class ViewRequest : imetspage
     {
         protected void Page_Load(object sender, EventArgs e)
@@ -32,6 +35,7 @@ namespace IMETPO
             }
             bool is_ack = false;
             Guid requestid = Guid.Empty;
+            // Pull the ID of the request from the parameters.
             for (int i = 0; i < Request.Params.Count; i++)
             {
                 if (Request.Params.GetKey(i).ToUpper() == "REQUESTID")
@@ -46,6 +50,7 @@ namespace IMETPO
                     }
                 }
             }
+            // Populate the page with data from the request.
             if (requestid != Guid.Empty)
             {
                 SqlConnection conn = ConnectToConfigString("imetpsconnection");
@@ -66,17 +71,29 @@ namespace IMETPO
             }
         }
 
+        /// <summary>
+        /// Build the history portion of the page from the transaction history of the request.
+        /// </summary>
+        /// <param name="working"></param>
         protected void BuildHistory(PurchaseRequest working)
         {
             string html = "<h4>Purchase Request History</h4><table class='history'>";
             html += "<tr><th>Transaction</th><th>User</th><th>Timestamp</th><th>Notes</th></tr>";
+            // This is pretty easy; just put the RequestTransaction info in a table.
             foreach (RequestTransaction t in working.history)
             {
                 if (t.transaction == RequestTransaction.TransactionType.Opened)
                     continue;
                 html += "<tr>";
                 html += "<td>" + RequestTransaction.TransactionTypeString(t.transaction) + "</td>";
-                html += "<td>" + t.username + "</td>";
+                if (!string.IsNullOrEmpty(t.userfullname.Trim()))
+                {
+                    html += "<td>" + t.userfullname + "</td>";
+                }
+                else
+                {
+                    html += "<td>" + t.username + "</td>";
+                }
                 html += "<td>" + t.timestamp.ToString() + "</td>";
                 html += "<td>" + t.comments + "</td>";
                 html += "</tr>";
@@ -85,8 +102,15 @@ namespace IMETPO
             history.InnerHtml = html;
         }
 
+        /// <summary>
+        /// This function populates all of the portions of the page with data from req.
+        /// </summary>
+        /// <param name="conn">An open connection to the IMETPS database.</param>
+        /// <param name="req">The request whose data we are populating.</param>
+        /// <param name="is_ack">A flag inficating whether this is an acknowledgement or not.</param>
         protected void PopulateData(SqlConnection conn, PurchaseRequest req, bool is_ack)
         {
+            // All of the text stuff is pretty straightforward.
             span_executornotes.InnerHtml = req.executornotes;
             span_fasnumber.InnerHtml = "<h1>" + req.fasnumber.Number + "</h1>";
             span_fasnumber2.InnerHtml = req.fasnumberstring;
@@ -101,13 +125,15 @@ namespace IMETPO
             span_requestornotes.InnerHtml = req.requestornotes;
             span_shippingcharges.InnerHtml = string.Format("{0:C}", req.shipcharge);
             span_tagnumber.InnerHtml = req.tagnumber;
+            // This is a lazy way to pull th ename of the requestor from the request.
             foreach (RequestTransaction t in req.history)
             {
                 if (t.transaction == RequestTransaction.TransactionType.Created)
                 {
-                    span_requestor.InnerHtml = t.username;
+                    span_requestor.InnerHtml = t.userfullname;
                 }
             }
+            // Format the dollar fields correctly.
             span_taxcharges.InnerHtml = string.Format("{0:C}", req.taxcharge);
             span_totalprice.InnerHtml = string.Format("{0:C}", req.TotalPrice);
             if (req.attachments.Count == 0)
@@ -117,7 +143,13 @@ namespace IMETPO
             }
             else
             {
-                string linkurl = "<a href='DownloadAttachment.aspx?ATTACHMENTID=" + req.attachments[0].ID.ToString() + "' target='_blank'>Download " + req.attachments[0].Filename + "</a>";
+                // Populate the attachments area
+                string linkurl = "<table border='0'>";
+                foreach (AttachedFile f in req.attachments)
+                {
+                    linkurl += "<tr><td><a href='DownloadAttachment.aspx?ATTACHMENTID=" + f.ID.ToString() + "' target='_blank'>Download " + f.Filename + "</a></td></tr>";
+                }
+                linkurl += "</table>";
                 rowAttachment.Visible = true;
                 rowAttachmentHelp.Visible = true;
                 attachmentlink.InnerHtml = linkurl;
@@ -133,6 +165,8 @@ namespace IMETPO
                 rowLinkHelp.Visible = true;
                 shoppingcartlink.InnerHtml = "<a href='" + req.shoppingcarturl + "' target='_blank'>" + req.shoppingcarturl + "</a>";
             }
+            top_requisition.InnerHtml = GetApplicationSetting("applicationPrintTitle");
+            // Populate the vendor information; it's all just text stuff.
             if(req.vendorid != null)
             {
                 string vendorinfo = "<table border='0'>";
@@ -205,24 +239,31 @@ namespace IMETPO
                 if (!string.IsNullOrEmpty(req.vendorid.customer_account_number))
                     vendorinfo += "<tr><td>Account #: " + req.vendorid.customer_account_number + "</td></tr>";
                 vendorinfo += "</table>";
-                span_vendorinfo.InnerHtml = vendorinfo;
-                if (is_ack)
-                {
-                    ack_tagnumber.InnerHtml = req.tagnumber;
-                    string html = "<table><tr><td><a class='squarebutton' href='SubmitRequest.aspx?REQUESTID=" +req.requestid.ToString() + "'><span>Edit this request</span></a></td>";
-                    html += "<td><a class='squarebutton' href='Default.aspx'><span>Return to main menu</span></a></td></tr></table>";
-                    ack_controls.InnerHtml = html;
-                }
-                else
-                {
-                    acknowledgement.Visible = false;
-                    ack_controls.Visible = false;
-                }
+                span_vendorinfo.InnerHtml = vendorinfo;                
             }
+            // If this is an acknowledgement, put some buttons at the bottom to go back to the main menu.
+            if (is_ack)
+            {
+                ack_tagnumber.InnerHtml = req.tagnumber;
+                string html = "<table><tr><td><a class='squarebutton' href='SubmitRequest.aspx?REQUESTID=" + req.requestid.ToString() + "'><span>Edit this request</span></a></td>";
+                html += "<td><a class='squarebutton' href='Default.aspx'><span>Return to main menu</span></a></td></tr></table>";
+                ack_controls.InnerHtml = html;
+            }
+            else
+            {
+                acknowledgement.Visible = false;
+                ack_controls.Visible = false;
+            }
+            // Print the history
             BuildHistory(req);
+            // Print the line items
             PopulateLineItems(req);
         }
 
+        /// <summary>
+        /// Iterate through the line items and print them on the form.
+        /// </summary>
+        /// <param name="working">The purchase request to put on the form.</param>
         protected void PopulateLineItems(PurchaseRequest working)
         {
             foreach (LineItem l in working.lineitems)
@@ -230,6 +271,7 @@ namespace IMETPO
                 if (l.state == LineItem.LineItemState.deleted)
                     continue;
 
+                // This is just a matter of adding rows to the table -- used ASP because it's cleaner than dumping out a bunch of text.
                 TableRow tr = new TableRow();
                 TableCell td = new TableCell();
                 td.Text = l.qty.ToString();

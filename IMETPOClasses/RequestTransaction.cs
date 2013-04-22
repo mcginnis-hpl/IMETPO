@@ -51,8 +51,13 @@ namespace IMETPOClasses
         }
 
         public TransactionType transaction;
+        // The userid of the person performing the transaction
         public Guid userid;
+        // The username of the above person (so we can load these without having to load the whole user entity)
         public string username;
+        // The full name of the above person (so we can load these without having to load the whole user entity)
+        public string userfullname;
+        // A timestamp, in server time
         public DateTime timestamp;
         public string comments;
         // This flag is false until the transaction is saved (when the request is saved); then it is flagged as true.
@@ -66,9 +71,10 @@ namespace IMETPOClasses
             comments = string.Empty;
             isLogged = true;
             username = string.Empty;
+            userfullname = string.Empty;
         }
 
-        public RequestTransaction(TransactionType inType, Guid inuserid, string inusername, string incomments)
+        public RequestTransaction(TransactionType inType, Guid inuserid, string inusername, string incomments, string inuserfullname)
         {
             transaction = inType;
             userid = inuserid;
@@ -76,8 +82,14 @@ namespace IMETPOClasses
             timestamp = DateTime.Now;
             isLogged = false;
             username = inusername;
+            userfullname = inuserfullname;
         }
 
+        /// <summary>
+        /// Save this transaction to the database
+        /// </summary>
+        /// <param name="conn">An open connection to the IMETPS database</param>
+        /// <param name="requestid">The GUID of this transaction.</param>
         public void Save(SqlConnection conn, Guid requestid)
         {
             if (isLogged)

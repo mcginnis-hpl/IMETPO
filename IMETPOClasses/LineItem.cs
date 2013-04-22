@@ -7,13 +7,16 @@ using System.Data.SqlClient;
 
 namespace IMETPOClasses
 {
+    /// <summary>
+    /// The LineItem class encapsulates the methods and properties for manipulating a line item, a single component of a purchase request.
+    /// </summary>
     public class LineItem
     {
         // The line item state maps to an int, which is then stored in the database
         // In the original, it was a string, but I can't abide strings for things that are not text.
         public enum LineItemState
         {
-            opened = -1,
+            opened = 256,
             pending = 0,
             approved = 2,
             rejected = 4,
@@ -42,8 +45,9 @@ namespace IMETPOClasses
         public bool inventoryMD;
         // The number of the item in the vendor's catalog
         public string itemnumber;
+        // The state of this item -- its status in the purchasing process.
         public LineItemState state;
-
+        // A convenience property that returns the total price of this line item.
         public float TotalPrice
         {
             get
@@ -66,7 +70,11 @@ namespace IMETPOClasses
             inventoryMD = false;
         }
 
-        // The requestid is passed in because a.) there's no other need for this item to references its parent, and b.) I'm lazy.
+        /// <summary>
+        /// Save the metadata associated with a line item to the backing database.
+        /// </summary>
+        /// <param name="conn">An open connection to the IMETPS database.</param>
+        /// <param name="requestid">The ID of the parent request to this entity.</param>
         public void Save(SqlConnection conn, Guid requestid)
         {
             if (lineitemid == Guid.Empty)

@@ -53,6 +53,8 @@
     <Content Include="DownloadAttachment.aspx" />
     <Content Include="FASNumbers.aspx" />
     <Content Include="images\filter.gif" />
+    <Content Include="images\FishAndIMET.jpg" />
+    <Content Include="images\IMET_banner.jpg" />
     <Content Include="images\IMET_logo.png" />
     <Content Include="images\sortable.gif" />
     <Content Include="images\sorted_down.gif" />
@@ -171,12 +173,6 @@
       <Project>{E45F220D-7537-40F7-85A5-DC8405C6FD35}</Project>
       <Name>IMETPOClasses</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Styles\Web.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="images\Web.config" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />

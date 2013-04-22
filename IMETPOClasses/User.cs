@@ -20,6 +20,9 @@ namespace IMETPOClasses
         }
     }
 
+    /// <summary>
+    /// This class stores information about an account.
+    /// </summary>
     public class FASNumber
     {
         // The FRS Number in question
@@ -56,6 +59,11 @@ namespace IMETPOClasses
             Permissions = new List<FASPermission>();
         }
        
+        /// <summary>
+        /// Loads an account from the database.
+        /// </summary>
+        /// <param name="conn">An open connection to the IMETPS database.</param>
+        /// <param name="inNumber">The Account Number of the account to load.</param>
         public void Load(SqlConnection conn, string inNumber)
         {
             SqlCommand cmd = new SqlCommand()
@@ -82,6 +90,10 @@ namespace IMETPOClasses
             reader.Close();
         }
 
+        /// <summary>
+        /// Save an account to the database.
+        /// </summary>
+        /// <param name="conn">An open connection to the IMETPS database</param>
         public void Save(SqlConnection conn)
         {
             SqlCommand cmd = new SqlCommand()
@@ -135,7 +147,8 @@ namespace IMETPOClasses
             inventory = 32,
             globalapprover = 64,
             noemail = 128,
-            globalrequestor = 256
+            globalrequestor = 256,
+            accountbypasser = 512
         }
         // A list of permissions that he user possesses
         public List<Permission> UserPermissions;
@@ -145,6 +158,8 @@ namespace IMETPOClasses
         public string email;
         public string password;
         public User parentuser;
+        public string firstname;
+        public string lastname;
 
         public User()
         {
@@ -154,8 +169,24 @@ namespace IMETPOClasses
             password = string.Empty;
             UserPermissions = new List<Permission>();
             parentuser = null;
+            firstname = string.Empty;
+            lastname = string.Empty;
         }
 
+        public string FullName
+        {
+            get
+            {
+                string ret = firstname;                
+                if (!string.IsNullOrEmpty(lastname))
+                {
+                    if (!string.IsNullOrEmpty(ret))
+                        ret += " ";
+                    ret += lastname;
+                }
+                return ret;
+            }
+        }
         // Return a list of all users that possess permission inPermission
         public static List<User> LoadUsersWithPermission(SqlConnection conn, User.Permission inPermission)
         {
@@ -174,6 +205,8 @@ namespace IMETPOClasses
                 u.username = reader["username"].ToString();
                 u.userid = new Guid(reader["userid"].ToString());
                 u.email = reader["email"].ToString();
+                u.firstname = reader["firstname"].ToString();
+                u.lastname = reader["lastname"].ToString();
                 ret.Add(u);
             }
             reader.Close();
@@ -197,6 +230,8 @@ namespace IMETPOClasses
                 u.username = reader["username"].ToString();
                 u.userid = new Guid(reader["userid"].ToString());
                 u.email = reader["email"].ToString();
+                u.firstname = reader["firstname"].ToString();
+                u.lastname = reader["lastname"].ToString();
                 ret.Add(u);
             }
             reader.Close();
@@ -207,6 +242,7 @@ namespace IMETPOClasses
         public List<FASNumber> LoadFASNumbers(SqlConnection conn, User.Permission inpermission)
         {
             SqlCommand cmd = null;
+            // If the user is a "global requestor", then they have the option for all of the account numbers.
             if (inpermission == Permission.globalrequestor)
             {
                 cmd = new SqlCommand()
@@ -218,6 +254,7 @@ namespace IMETPOClasses
             }
             else
             {
+                // Otherwise, they just get the ones that they have permissions for.
                 cmd = new SqlCommand()
                 {
                     Connection = conn,
@@ -264,6 +301,10 @@ namespace IMETPOClasses
             return ret;
         }
 
+        /// <summary>
+        /// Save a user record to the database.
+        /// </summary>
+        /// <param name="conn">An open connection to the IMETPS database.</param>
         public void Save(SqlConnection conn)
         {
             if (userid == Guid.Empty)
@@ -279,6 +320,8 @@ namespace IMETPOClasses
             cmd.Parameters.Add(new SqlParameter("@inusername", username));
             cmd.Parameters.Add(new SqlParameter("@inpassword", password));
             cmd.Parameters.Add(new SqlParameter("@inemail", email));
+            cmd.Parameters.Add(new SqlParameter("@infirstname", firstname));
+            cmd.Parameters.Add(new SqlParameter("@inlastname", lastname));
             cmd.Parameters.Add(new SqlParameter("@inuserid", userid));
             if (parentuser != null)
             {
@@ -300,6 +343,11 @@ namespace IMETPOClasses
             cmd.ExecuteNonQuery();
         }
 
+        /// <summary>
+        /// Load a user from the IMETPS database.
+        /// </summary>
+        /// <param name="conn">An open connection to the IMETPS database.</param>
+        /// <param name="inid">The ID of the user to be loaded.</param>
         public void Load(SqlConnection conn, Guid inid)
         {
             SqlCommand cmd = new SqlCommand()
@@ -333,8 +381,17 @@ namespace IMETPOClasses
                 {
                     temp_puid = new Guid(reader["parentuserid"].ToString());
                 }
+                if (!reader.IsDBNull(reader.GetOrdinal("firstname")))
+                {
+                    firstname = reader["firstname"].ToString();
+                }
+                if (!reader.IsDBNull(reader.GetOrdinal("lastname")))
+                {
+                    lastname = reader["lastname"].ToString();
+                }
             }
             reader.Close();
+            // Load the user's permissions.
             if (userid != Guid.Empty)
             {
                 cmd = new SqlCommand()
@@ -361,6 +418,11 @@ namespace IMETPOClasses
             }
         }
 
+        /// <summary>
+        /// Load the user by username; this is duplicate code, but it saves an extra call to the database.
+        /// </summary>
+        /// <param name="conn">An open connection to the IMETPS database.</param>
+        /// <param name="inusername">The username of the user to load.</param>
         public void LoadByUsername(SqlConnection conn, string inusername)
         {
             SqlCommand cmd = new SqlCommand()
@@ -394,8 +456,17 @@ namespace IMETPOClasses
                 {
                     temp_puid = new Guid(reader["parentuserid"].ToString());
                 }
+                if (!reader.IsDBNull(reader.GetOrdinal("firstname")))
+                {
+                    firstname = reader["firstname"].ToString();
+                }
+                if (!reader.IsDBNull(reader.GetOrdinal("lastname")))
+                {
+                    lastname = reader["lastname"].ToString();
+                }
             }
             reader.Close();
+            // Load the user's permissions.
             if (userid != Guid.Empty)
             {
                 cmd = new SqlCommand()

@@ -1,6 +1,6 @@
 ﻿body {
   font : 10pt sans-serif;
-  background-color: #D8E2E9;
+  background-color: #025780;
 }
 
 table {
@@ -34,13 +34,14 @@ h1 {
 
 .top p {
   text-align: right;
-  margin-top: -10px;
+  margin-top: 20px;
   padding-top: 0px;
   font-size: 90%;
   font-weight: normal;
   text-transform: lowercase;
   letter-spacing: 2pt;
   clear: right;
+  color: #ffffff;
 }
 
 .bottom p {
@@ -189,13 +190,12 @@ color: black;
 
 .submitheader
 {
-    width:90%;
+    width:100%;
 }
 
 .submitheader td
 {
     vertical-align: top;
-    width:20%;
 }
 
 .vendorDetails
@@ -207,4 +207,70 @@ color: black;
 .vendordetails td
 {
     width:25%;
+}
+
+.banner {
+	background-image: url(/images/IMET_banner.jpg);
+	background-repeat: no-repeat;
+	width: 924px;
+	height: 137px;
+	margin-left: auto;
+	margin-right: auto;
+	border-color: #FFFFFF;
+	border-width: medium;
+	border-style: solid;
+	vertical-align: bottom;
+}
+               
+.logo {
+	border: 0;
+	margin-top: 52px;
+	text-align: left;
+}
+
+#backlink a:link
+{
+    color: #FFFFFF;
+    font-weight: bold;
+}
+
+#backlink a:visited
+{
+    color: #FFFFFF;
+    font-weight: bold;
+}
+
+#backlink a:hover
+{
+    color: #FFFFFF;
+    font-weight: bold;
+}
+
+#backlink a:active
+{
+    color: #FFFFFF;
+    font-weight: bold;
+}
+
+#filters 
+{
+    padding-bottom: 30px;
+}
+
+.title
+{
+    color: #FFFFFF;
+    font-size: larger;
+    font-family: sans-serif;
+    font-weight: bolder;
+    margin-left: auto;
+	margin-right: auto;
+	margin-top: 15px;
+	margin-bottom: 10px;
+}
+
+.textfield {
+  border: 1px solid black;
+  padding: 10px 10px 10px 10px;
+  width: 80%;
 }

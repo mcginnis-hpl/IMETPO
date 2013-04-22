@@ -22,11 +22,11 @@
 </head>
 <body>
     <form id="form1" runat="server">
-    <div class="top">
-        <h1>
-            <span id="appTitle" runat="server"></span></h1>
-        <p>
-            <span id="appSubtitle" runat="server"></span></p>
+    <div id="headerTitle" class="banner" runat="server">
+        <img class="logo" src="images/IMET_logo.png" width="398" height="72" alt="IMET" />
+    </div>
+    <div id="title" class="title">
+        <center><span id="titlespan" runat="server"></span></center>
     </div>
     <div id="mainbody" class="content">
         <div id="backlink">
@@ -78,6 +78,13 @@
                     <th>
                         Authorized Approvers
                     </th>
+                    <th>
+                    </th>
+                    <th>
+                        Delegated Approvers
+                    </th>
+                    <th>
+                    </th>
                 </tr>
                 <tr>
                     <td>
@@ -100,6 +107,15 @@
                     </td>
                     <td>
                         <asp:ListBox ID="listApprovers" runat="server"></asp:ListBox>
+                    </td>
+                    <td>
+                        <table border="0">
+                        <tr><td><asp:LinkButton CssClass="squarebutton" ID="btnAddBypassApprover" runat="server" OnClick="btnAddBypassApprover_Click" Width="140"><span>Add Delegated-></span></asp:LinkButton></td></tr>
+                        <tr><td><asp:LinkButton CssClass="squarebutton" ID="btnRemoveBypassApprover" runat="server" OnClick="btnRemoveBypassApprover_Click" Width="140"><span><- Remove Delegated</span></asp:LinkButton></td></tr>
+                        </table>                        
+                    </td>
+                    <td>
+                        <asp:ListBox ID="listBypassApprovers" runat="server"></asp:ListBox>
                     </td>
                 </tr>
             </table>

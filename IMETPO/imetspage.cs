@@ -93,19 +93,25 @@ namespace IMETPO
         public virtual void ShowAlert(string msg)
         {
             AddStartupCall("alert('" + msg + "');", "MessagePopUp");
-            // base.ClientScript.RegisterStartupScript(this.GetType(), "MessagePopUp", "<script type='text/javascript'>alert('" + msg + "')</script>", false);
+        }
+
+        // Inserts a javascript popup that shows text msg.
+        public virtual void ShowAlertWithRedirect(string msg, string destination)
+        {
+            string jscript = "alert('" + msg + "');window.location='" + destination + "';";
+            AddStartupCall(jscript, "MessagePopUp");
         }
 
         // Add a javascript to the page
         public void AddStartupCall(string call, string name)
         {
-            base.ClientScript.RegisterStartupScript(base.GetType(), name, "<script type='text/javascript'>" + call + "</script>", false);
+            base.ClientScript.RegisterStartupScript(this.GetType(), name, call, true);
         }
 
         // Remove a javascript fron the page
         public void RemoveStartupCall(string name)
         {
-            base.ClientScript.RegisterStartupScript(base.GetType(), name, string.Empty, true);
+            base.ClientScript.RegisterStartupScript(this.GetType(), name, string.Empty, true);
         }
 
         // Return a user object for the currently logged in user (loading it if the user does not exist)
@@ -163,23 +169,27 @@ namespace IMETPO
         }
 
         // Dynamically fill out the header values.  This was done to facilitate deploying the application a multiple facilities.
-        public void PopulateHeader(HtmlGenericControl title, HtmlGenericControl subtitle)
+        public void PopulateHeader(HtmlGenericControl title)
         {
             string title_text = GetApplicationSetting("applicationTitle");
             string subtitle_text = GetApplicationSetting("applicationSubtitle");
+            string fulltitle = title_text + " (" + subtitle_text + ")";
             if(title != null)
-                title.InnerText = title_text;
-            if(subtitle != null)
-                subtitle.InnerText = subtitle_text;
+                title.InnerText = fulltitle;
 
-            Page.Title = title_text + ": " + subtitle_text;
+            Page.Title = fulltitle;
+        }
+
+        public void HandleError(Exception ex)
+        {
+            HandleError(ex, string.Empty);
         }
 
         // Show the user an error, and then send an email to the developer with error details.
-        public void HandleError(Exception ex)
+        public void HandleError(Exception ex, string optional)
         {
             ShowAlert("An error occurred; the developer has been notified.\n" + ex.Message + "\n" + ex.StackTrace);
-            SendErrorNotification(ex.Message, ex.StackTrace);
+            SendErrorNotification(ex.Message + optional, ex.StackTrace);
         }
 
         // Send an email to the developer, including a stack trace and an exception message.
@@ -208,42 +218,9 @@ namespace IMETPO
             string fromaddress = GetApplicationSetting("emailaddress");
             string fromuser = GetApplicationSetting("emailuser");
             string frompassword = GetApplicationSetting("emailpassword");
-            MailMessage mail = new MailMessage();
-            mail.From = new MailAddress(fromaddress);
-            if (to != null)
-            {
-                foreach (string s in to)
-                {
-                    mail.To.Add(new MailAddress(s));
-                }
-            }
-            if (cc != null)
-            {
-                foreach (string s in cc)
-                {
-                    mail.CC.Add(new MailAddress(s));
-                }
-            }
-            if (bcc != null)
-            {
-                foreach (string s in bcc)
-                {
-                    mail.Bcc.Add(new MailAddress(s));
-                }
-            }
-            // mail.To.Add(new MailAddress("sean@seanwmcginnis.com"));
-            mail.Subject = subject;
-            mail.Body = body;
-            mail.IsBodyHtml = true;
-
-            SmtpClient client = new SmtpClient();
-            client.Port = int.Parse(GetApplicationSetting("emailport"));
-            client.DeliveryMethod = SmtpDeliveryMethod.Network;
-            client.UseDefaultCredentials = false;
-            client.Host = GetApplicationSetting("emailhost");
-            client.Credentials = new System.Net.NetworkCredential(fromuser, frompassword);
-            client.EnableSsl = true; // runtime encrypt the SMTP communications using SSL
-            client.Send(mail);
+            string emailport = GetApplicationSetting("emailport");
+            string emailhost = GetApplicationSetting("emailhost");
+            Utils.SendEmail(to, cc, bcc, subject, body, fromaddress, fromuser, frompassword, emailport, emailhost);
         }
     }
 }

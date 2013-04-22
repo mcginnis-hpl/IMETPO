@@ -31,22 +31,22 @@ namespace IMETPO {
         protected global::System.Web.UI.HtmlControls.HtmlForm form1;
         
         /// <summary>
-        /// appTitle control.
+        /// headerTitle control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl appTitle;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl headerTitle;
         
         /// <summary>
-        /// appSubtitle control.
+        /// titlespan control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl appSubtitle;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl titlespan;
         
         /// <summary>
         /// content control.

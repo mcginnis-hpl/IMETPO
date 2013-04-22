@@ -9,22 +9,27 @@ using IMETPOClasses;
 
 namespace IMETPO
 {
+    /// <summary>
+    /// The main page of the application - this is the page that does all the work editing a request.
+    /// </summary>
     public partial class SubmitRequest : imetspage
     {
+        // The dynamic controls are added in the OnInit event of the page -- this makes it possible to maintain their state and use them later in the postback.
         protected override void OnInit(EventArgs e)
         {
-            try {
-            if (!DesignMode)
+            try
             {
-                SqlConnection conn = ConnectToConfigString("imetpsconnection");
-                PurchaseRequest working = (PurchaseRequest)GetSessionValue("WorkingPurchaseRequest");
-                if (working != null)
+                if (!DesignMode)
                 {
-                    PopulateData(conn, working, false);
+                    SqlConnection conn = ConnectToConfigString("imetpsconnection");
+                    PurchaseRequest working = (PurchaseRequest)GetSessionValue("WorkingPurchaseRequest");
+                    if (working != null)
+                    {
+                        PopulateData(conn, working, false);
+                    }
+                    conn.Close();
                 }
-                conn.Close();
-            }
-            base.OnInit(e);
+                base.OnInit(e);
             }
             catch (Exception ex)
             {
@@ -34,193 +39,63 @@ namespace IMETPO
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            try {
-            PopulateHeader(appTitle, appSubtitle);
-            if (!IsPostBack)
+            try
             {
-                if (!IsAuthenticated)
+                if (!IsPostBack)
                 {
-                    string url = "Default.aspx?RETURNURL=" + Request.Url.ToString();
-                    Response.Redirect(url, false);
-                    return;
-                }
-                Guid requestid = Guid.Empty;
-                for (int i = 0; i < Request.Params.Count; i++)
-                {
-                    if (Request.Params.GetKey(i).ToUpper() == "REQUESTID")
+                    RemoveSessionValue("WorkingPurchaseRequest");
+                    // Bounce the user back to the main page if they are not logged in.
+                    if (!IsAuthenticated)
                     {
-                        requestid = new Guid(Request.Params[i]);
+                        string url = "Default.aspx?RETURNURL=" + Request.Url.ToString();
+                        Response.Redirect(url, false);
+                        return;
                     }
-                }
-                SqlConnection conn = ConnectToConfigString("imetpsconnection");
-                PurchaseRequest working = new PurchaseRequest();
-                if (requestid != Guid.Empty)
-                {
-                    working.Load(conn, requestid);
+                    PopulateHeader(titlespan);
+                    Guid requestid = Guid.Empty;
+                    // Extract the current request ID from the parameters.
+                    for (int i = 0; i < Request.Params.Count; i++)
+                    {
+                        if (Request.Params.GetKey(i).ToUpper() == "REQUESTID")
+                        {
+                            requestid = new Guid(Request.Params[i]);
+                        }
+                    }
+                    // Load the current request from the ID, if available.
+                    SqlConnection conn = ConnectToConfigString("imetpsconnection");
+                    PurchaseRequest working = new PurchaseRequest();
+                    if (requestid != Guid.Empty)
+                    {
+                        working.Load(conn, requestid);
+                    }
+                    else
+                    {
+                        working.userid = CurrentUser;
+                    }
+                    PopulateData(conn, working, true);
+                    conn.Close();
+                    SetSessionValue("WorkingPurchaseRequest", working);
                 }
                 else
                 {
-                    working.userid = CurrentUser;
-                }
-                PopulateData(conn, working, true);
-                conn.Close();
-                SetSessionValue("WorkingPurchaseRequest", working);
-            }
-            else
-            {
-                if (!string.IsNullOrEmpty(hiddenLineItems.Value))
-                {
-                    string[] tokens = hiddenLineItems.Value.Split(":".ToCharArray());
-                    if (tokens[0] == "EDIT")
+                    if (!string.IsNullOrEmpty(hiddenLineItems.Value))
                     {
-                        EditLineItem(new Guid(tokens[1]));
+                        string[] tokens = hiddenLineItems.Value.Split(":".ToCharArray());
+                        if (tokens[0] == "REMOVEATTACHMENT")
+                        {
+                            RemoveAttachment(new Guid(tokens[1]));
+                        }
+                        hiddenLineItems.Value = string.Empty;
                     }
-                    else if (tokens[0] == "DELETE")
-                    {
-                        DeleteLineItem(new Guid(tokens[1]));
-                    }
-                    hiddenLineItems.Value = string.Empty;
                 }
-            }
             }
             catch (Exception ex)
             {
                 HandleError(ex);
             }
         }
-
-        protected void EditLineItem(Guid lineitemid)
-        {
-            SqlConnection conn = ConnectToConfigString("imetpsconnection");
-            PurchaseRequest working = (PurchaseRequest)GetSessionValue("WorkingPurchaseRequest");
-            try
-            {
-                foreach (LineItem li in working.lineitems)
-                {
-                    if (li.lineitemid == lineitemid)
-                    {
-                        TextBox txt = (TextBox)Page.FindControl("txtQuantity_" + lineitemid.ToString());
-                        int new_quantity = -1;
-                        float new_price = -1;
-                        if (!txt.ReadOnly)
-                        {                            
-                            try
-                            {
-                                new_quantity = int.Parse(txt.Text);
-                            }
-                            catch (Exception)
-                            {
-                                ShowAlert("You must enter a valid quantity for that line item.");
-                                break;
-                            }
-                        }
-                        txt = (TextBox)Page.FindControl("txtUOM_" + lineitemid.ToString());
-                        if (!txt.ReadOnly)
-                        {
-                            li.unit = txt.Text;
-                        }
-
-                        txt = (TextBox)Page.FindControl("txtLineItemDesc_" + lineitemid.ToString());
-                        if (!txt.ReadOnly)
-                        {
-                            li.description = txt.Text;
-                        }
-
-                        txt = (TextBox)Page.FindControl("txtUnitPrice_" + lineitemid.ToString());
-                        if (!txt.ReadOnly)
-                        {                            
-                            try
-                            {
-                                new_price = float.Parse(txt.Text);
-                            }
-                            catch (Exception)
-                            {
-                                ShowAlert("You must enter a valid unit price for that line item.");
-                                break;
-                            }
-                        }
-                        if(new_quantity >= 0)
-                            li.qty = new_quantity;
-                        if(new_price >= 0)
-                            li.unitprice = new_price;
-
-                        txt = (TextBox)Page.FindControl("txtQuantityReceived_" + lineitemid.ToString());
-                        new_quantity = -1;
-                        if (!txt.ReadOnly)
-                        {
-                            try
-                            {
-                                new_quantity = int.Parse(txt.Text);
-                            }
-                            catch (Exception)
-                            {
-                                break;
-                            }
-                            li.qtyreceived = new_quantity;
-                        }
-
-                        CheckBox ch = (CheckBox)Page.FindControl("chkInventoryIMET_" + lineitemid.ToString());
-                        if (ch != null)
-                        {
-                            if (ch.Enabled)
-                            {
-                                li.inventoryIMET = ch.Checked;
-                                li.state = LineItem.LineItemState.inventory;
-                            }
-                        }
-                        ch = (CheckBox)Page.FindControl("chkInventoryMD_" + lineitemid.ToString());
-                        if (ch != null)
-                        {
-                            if (ch.Enabled)
-                            {
-                                li.inventoryMD = ch.Checked;
-                                li.state = LineItem.LineItemState.inventory;
-                            }
-                        }
-                        break;
-                    }
-                }
-                SetSessionValue("WorkingPurchaseRequest", working);
-                PopulateData(conn, working, true);
-            }
-            catch (Exception ex)
-            {
-                HandleError(ex);
-            }
-            finally
-            {
-                conn.Close();
-            }
-        }
-
-        protected void DeleteLineItem(Guid lineitemid)
-        {
-            SqlConnection conn = ConnectToConfigString("imetpsconnection");
-            PurchaseRequest working = (PurchaseRequest)GetSessionValue("WorkingPurchaseRequest");
-            try
-            {
-                for (int i = 0; i < working.lineitems.Count; i++)
-                {
-                    if (working.lineitems[i].lineitemid == lineitemid)
-                    {
-                        working.lineitems[i].state = LineItem.LineItemState.deleted;
-                        break;
-                    }
-                }
-                // PopulateData(conn, working, true);
-                PopulateLineItems(conn, working, true);
-                SetSessionValue("WorkingPurchaseRequest", working);
-            }
-            catch (Exception ex)
-            {
-                HandleError(ex);
-            }
-            finally
-            {
-                conn.Close();
-            }
-        }
-
+        
+        // The execution mode determines what controls are visible; it is determiend from the parameters, and from the state of the request.
         protected string GetExecMode(PurchaseRequest working)
         {
             string ret = "submit";
@@ -256,10 +131,12 @@ namespace IMETPO
             return ret;
         }
 
+        // Populate the history section of the page.
         protected void BuildHistory(PurchaseRequest working)
         {
             string html = "<h4>Purchase Request History</h4><table class='history'>";
             html += "<tr><th>Transaction</th><th>User</th><th>Timestamp</th><th>Notes</th></tr>";
+            // Just iterate throught he history and populate a table with the data from each transaction.
             foreach (RequestTransaction t in working.history)
             {
                 if (t.transaction == RequestTransaction.TransactionType.Opened)
@@ -275,6 +152,12 @@ namespace IMETPO
             history.InnerHtml = html;
         }
 
+       /// <summary>
+        /// Populate the page with data from the current request.
+       /// </summary>
+       /// <param name="conn">An open connection to the IMETPS database</param>
+       /// <param name="working">The current purchase request.</param>
+       /// <param name="initValues">If true, then put the values from the request in the controls; otherwise, leave the controls as they are.</param>
         protected void PopulateData(SqlConnection conn, PurchaseRequest working, bool initValues)
         {
             string mode = GetExecMode(working);
@@ -287,6 +170,7 @@ namespace IMETPO
             {
                 btnDelete.Visible = true;
             }
+            // Change the title of the form based on the current execution mode.
             if (mode == "submit")
             {
                 title.InnerHtml = "Submit a purchase request";
@@ -297,7 +181,7 @@ namespace IMETPO
             }
             else if (mode == "approve")
             {
-                title.InnerHtml = "Approve a purchase request";
+                title.InnerHtml = "Update or Approve Pending Purchase Requests";
             }
             else if (mode == "close")
             {
@@ -311,11 +195,14 @@ namespace IMETPO
             {
                 title.InnerHtml = "Receive a purchase request";
             }
+            // If initValues, then populate the controls
             if (initValues)
             {
+                // Clear the list of FAS numbers
                 comboFASNumber.Items.Clear();
                 comboalt_FASnumber.Items.Clear();
 
+                // If this is a new request, put all of the FAS numbers available to this account in the combo box.
                 List<FASNumber> fasnumbers = null;
                 if (mode == "submit" || mode == "edit" || working.fasnumber == null)
                 {
@@ -347,6 +234,7 @@ namespace IMETPO
                     comboFASNumber.Enabled = true;
                     comboalt_FASnumber.Enabled = true;
                 }
+                // Otherwise, just add the current FAS number to the list, and disable it so it can't be changed,.
                 else
                 {
                     fasnumbers = new List<FASNumber>();
@@ -366,6 +254,7 @@ namespace IMETPO
                     comboFASNumber.Enabled = false;
                     comboalt_FASnumber.Enabled = false;
                 }
+                // Build a list of possible requestors
                 Guid requestorid = working.GetTransactionUser(RequestTransaction.TransactionType.Opened);
                 if (requestorid == Guid.Empty)
                     requestorid = CurrentUser.userid;
@@ -406,6 +295,7 @@ namespace IMETPO
                     comboRequester.Enabled = false;
                 }
 
+                // Populate the list of available vendors.
                 comboVendors.Items.Clear();
                 comboVendors.Items.Add(new ListItem("New Vendor", "NEW"));
                 List<Vendor> vendors = Vendor.LoadAllVendors(conn);
@@ -425,6 +315,7 @@ namespace IMETPO
                 {
                     comboVendors.Enabled = false;
                 }
+                // Populate the vendor information from the currently selected vendor (if any)
                 if (comboVendors.SelectedValue == "NEW")
                 {
                     txtVendorName.Enabled = true;
@@ -439,6 +330,10 @@ namespace IMETPO
                 {
                     vendorDetails.Visible = false;
                     vendorDetailsHeader.Visible = false;
+                    rowVendorContactAccountNumber.Visible = false;
+                    rowVendorContactEmail.Visible = false;
+                    rowVendorContactName.Visible = false;
+                    rowVendorContactPhone.Visible = false;
                 }
                 else
                 {
@@ -461,7 +356,7 @@ namespace IMETPO
                     txtVendor_customer_account_number.Text = working.vendorid.customer_account_number;
                     txtVendorcontact_name.Text = working.vendorid.contact_name;
                     txtVendorcontact_email.Text = working.vendorid.contact_email;
-                    txtVendorcontact_phone.Text = working.vendorid.contact_phone;                    
+                    txtVendorcontact_phone.Text = working.vendorid.contact_phone;
                 }
                 else
                 {
@@ -476,20 +371,13 @@ namespace IMETPO
                     txtVendorPhone.Text = string.Empty;
                     txtVendorPostalCode.Text = string.Empty;
                     txtVendorState.Text = string.Empty;
-                    txtVendor_customer_account_number.Text = string.Empty ;
+                    txtVendor_customer_account_number.Text = string.Empty;
                     txtVendorcontact_name.Text = string.Empty;
                     txtVendorcontact_email.Text = string.Empty;
                     txtVendorcontact_phone.Text = string.Empty;
-                }                
-                if (working.attachments.Count > 0)
-                {
-                    string linkurl = "<a href='DownloadAttachment.aspx?ATTACHMENTID=" + working.attachments[0].ID.ToString() + "' target='_blank'>Download " + working.attachments[0].Filename + "</a>";
-                    filedownloadlink.InnerHtml = linkurl;
                 }
-                else
-                {
-                    filedownloadlink.InnerHtml = string.Empty;
-                }
+                // Populate the list of attachments.
+                PopulateAttachments(working);
 
                 if (!string.IsNullOrEmpty(working.tagnumber))
                 {
@@ -501,16 +389,23 @@ namespace IMETPO
                 }
                 lblStatus.Text = PurchaseRequest.GetRequestStateString(working.state);
 
-                Guid curr_requestor = new Guid(comboRequester.SelectedValue);
-                if (curr_requestor != CurrentUser.userid)
+                /*if (CurrentUser.UserPermissions.Contains(IMETPOClasses.User.Permission.globalapprover) && (working.state == PurchaseRequest.RequestState.pending || working.state == PurchaseRequest.RequestState.recjected))
                 {
                     rowBypass.Visible = true;
+                    Guid curr_requestor = new Guid(comboRequester.SelectedValue);
+                    if (curr_requestor != CurrentUser.userid)
+                    {
+                        rowBypass.Visible = true;
+                    }
+                    else
+                    {
+                        rowBypass.Visible = false;
+                    }
                 }
                 else
                 {
                     rowBypass.Visible = false;
-                }
-
+                }*/
                 if (working.state != PurchaseRequest.RequestState.opened && working.state != PurchaseRequest.RequestState.pending && working.state != PurchaseRequest.RequestState.rejected)
                 {
                     btnDelete.Visible = false;
@@ -519,6 +414,7 @@ namespace IMETPO
                 {
                     btnDelete.Visible = true;
                 }
+                // Chnage the submit button prompt depending on the state of the request.
                 if (working.state == PurchaseRequest.RequestState.opened)
                 {
                     btnSubmit.Text = "<span>Submit this Request</span>";
@@ -528,6 +424,26 @@ namespace IMETPO
                     btnSubmit.Text = "<span>Save Changes to this Request</span>";
                 }
 
+                btnOverrideAutoApprove.Visible = false;
+                // This is a tough one: look through the transaction history for an auto-approval and, if the request was auto-approved, allow an admin to bounce it back for review.
+                if (CurrentUser.UserPermissions.Contains(IMETPOClasses.User.Permission.admin) || CurrentUser.UserPermissions.Contains(IMETPOClasses.User.Permission.purchaser))
+                {
+                    if (working.state == PurchaseRequest.RequestState.approved)
+                    {
+                        for (int i = working.history.Count - 1; i >= 0; i--)
+                        {
+                            if (working.history[i].transaction == RequestTransaction.TransactionType.Approved)
+                            {
+                                if (working.history[i].comments.IndexOf("Auto-approved because requestor") >= 0)
+                                {
+                                    btnOverrideAutoApprove.Visible = true;
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+                // Determin if the user can approve -- either due to global approval permissions, or approver permissions on the current user's account.
                 bool can_approve = false;
                 if (CurrentUser.UserPermissions.Contains(IMETPOClasses.User.Permission.globalapprover))
                 {
@@ -561,14 +477,7 @@ namespace IMETPO
                     btnReject.Visible = false;
                 }
 
-                if (mode == "close")
-                {
-                    btnClose.Visible = true;
-                }
-                else
-                {
-                    btnClose.Visible = false;
-                }
+                // Manage the visibility of the requisition controls based on the mode.
                 if (mode == "submit" || mode == "edit" || mode == "approve")
                 {
                     rowRequisitionNumber.Visible = false;
@@ -588,6 +497,7 @@ namespace IMETPO
                     lblRequisitionNumber.Visible = true;
                 }
 
+                // Allow cart links or attachments if the request is in create or edit mode; otherwise, disable the link controls.
                 if (mode == "submit" || mode == "edit")
                 {
                     txtCartLink.Visible = true;
@@ -595,10 +505,10 @@ namespace IMETPO
                 }
                 else
                 {
-                    if(!string.IsNullOrEmpty(working.shoppingcarturl))
+                    if (!string.IsNullOrEmpty(working.shoppingcarturl))
                     {
                         cartlink.InnerHtml = "<a href='" + working.shoppingcarturl + "' target='_blank'>" + working.shoppingcarturl + "</a>";
-                    }                                        
+                    }
                     txtCartLink.Visible = false;
                 }
 
@@ -620,6 +530,8 @@ namespace IMETPO
                     }
                 }
 
+                // Show the requestor fields based on the mode of the page.  For most of these fields, there is either a label or a text box.  Show the text box if it is
+                // editable; otherwise, show the label.
                 if (mode == "submit" || mode == "edit")
                 {
                     if (!string.IsNullOrEmpty(working.description))
@@ -646,14 +558,15 @@ namespace IMETPO
                 }
                 else
                 {
-                    lblDescription.Text = working.description;
+                    lblDescription.InnerText = working.description;
                     lblDescription.Visible = true;
                     txtDescription.Visible = false;
 
-                    lblRequestorNotes.Text = working.requestornotes;
+                    lblRequestorNotes.InnerText = working.requestornotes;
                     txtRequestorNotes.Visible = false;
                     lblRequestorNotes.Visible = true;
                 }
+                // If this is approval mode and the user can approve, show the executor notes; otherwise, hide it.
                 if (mode == "approve" && can_approve)
                 {
                     if (!string.IsNullOrEmpty(working.executornotes))
@@ -673,37 +586,26 @@ namespace IMETPO
                 }
                 else
                 {
-                    lblExecutorNotes.Text = working.executornotes;
+                    lblExecutorNotes.InnerText = working.executornotes;
                     txtExecutorNotes.Visible = false;
                     lblExecutorNotes.Visible = true;
                 }
-
-                if (mode == "purchase")
-                {
-                    if (!string.IsNullOrEmpty(working.purchasernotes))
-                    {
-                        txtPurchaserNotes.Text = working.purchasernotes;
-                    }
-                    else
-                    {
-                        txtPurchaserNotes.Text = string.Empty;
-                    }
-                    txtPurchaserNotes.Visible = true;
-                    lblPurchaserNotes.Visible = false;
-                }
-                else if (mode == "submit" || mode == "edit" || mode == "approve")
-                {
+                
+                // Hide the purchaser fields if the request has not yet gotten to the "Approved" stage.
+                if (mode == "submit" || mode == "edit" || mode == "approve")
+                {                                        
                     rowPurchaserNotes.Visible = false;
-                    rowPurchaseComplete.Visible = false;
+                    txtPurchaserNotes.Visible = false;
                 }
                 else
                 {
-                    lblPurchaserNotes.Text = working.purchasernotes;
-                    txtPurchaserNotes.Visible = false;
-                    lblPurchaserNotes.Visible = true;
+                    txtPurchaserNotes.Text = string.Empty;
+                    txtPurchaserNotes.Visible = true;
+                    rowPurchaserNotes.Visible = true;
                 }
 
-                if (mode == "purchase")
+                // If this request is in purchase mode, and the user is a purchaser, show the purchase complete checkbox.
+                if (mode == "purchase" && CurrentUser.UserPermissions.Contains(IMETPOClasses.User.Permission.purchaser))
                 {
                     rowPurchaseComplete.Visible = true;
                 }
@@ -712,17 +614,16 @@ namespace IMETPO
                     rowPurchaseComplete.Visible = false;
                 }
 
-                if (mode == "receive")
+                if (mode == "submit" || mode == "edit" || mode == "approve")
                 {
-                    rowReceiveComplete.Visible = true;
+                    btnAddRows.Visible = true;
                 }
                 else
                 {
-                    rowReceiveComplete.Visible = false;
+                    btnAddRows.Visible = false;
                 }
-
-
             }
+            // Show the line items
             PopulateLineItems(conn, working, initValues);
             BuildHistory(working);
             if (working.requestid != Guid.Empty)
@@ -732,9 +633,11 @@ namespace IMETPO
             }
         }
 
+        // Populate the list of line items.
         protected void PopulateLineItems(SqlConnection conn, PurchaseRequest working, bool initValues)
         {
             int i = 0;
+            // Remove all of the rows from the table that are not static rows.
             while (i < tblLineItems.Rows.Count)
             {
                 if (tblLineItems.Rows[i].GetType() == typeof(TableHeaderRow) || tblLineItems.Rows[i].GetType() == typeof(TableFooterRow) || tblLineItems.Rows[i].ID == "newItemRow")
@@ -746,45 +649,41 @@ namespace IMETPO
                     tblLineItems.Rows.RemoveAt(i);
                 }
             }
-            if (initValues)
+            int num_rows = 5;
+            if (working.state == PurchaseRequest.RequestState.purchased || working.state == PurchaseRequest.RequestState.deleted || working.state == PurchaseRequest.RequestState.received)
             {
-                txtLineItemDesc_new.Text = string.Empty;
-                txtQuantity_new.Text = string.Empty;
-                txtUnitPrice_new.Text = string.Empty;
-                txtUOM_new.Text = string.Empty;
-                txtLineItemNumber_new.Text = string.Empty;
-            }
-            string mode = GetExecMode(working);
-            if (mode == "submit" || mode == "edit")
-            {
-                newItemRow.Visible = true;
+                num_rows = working.lineitems.Count;
             }
             else
             {
-                newItemRow.Visible = false;
-            }
-            if (mode == "purchase" || mode == "receive" || mode == "close")
+                if (working.lineitems.Count > 5)
+                {
+                    num_rows = (working.lineitems.Count / 5) * 5;
+                    if (working.lineitems.Count % 5 > 0)
+                        num_rows += 5;
+                }
+            }            
+            // There are some fields that only show up in certain modes.  Show or hide those based on the exec mode of the request.
+            string mode = GetExecMode(working);
+            if ((mode == "purchase") && CurrentUser.UserPermissions.Contains(IMETPOClasses.User.Permission.purchaser))
             {
                 headerToBeInventoried.Visible = true;
-                newlineToBeInventoried.Visible = true;
             }
             else
             {
-                headerQuantityReceived.Visible = false;
                 headerToBeInventoried.Visible = false;
-                newlineToBeInventoried.Visible = false;
-                newlineQuantityReceived.Visible = false;
             }
             if (mode == "receive" || mode == "close")
             {
                 headerQuantityReceived.Visible = true;
-                newlineQuantityReceived.Visible = true;
+                headerReceived.Visible = true;
             }
             else
             {
                 headerQuantityReceived.Visible = false;
-                newlineQuantityReceived.Visible = false;
+                headerReceived.Visible = false;
             }
+            // Find the place in the table where we should start inserting rows.
             int row_index = 0;
             for (i = 0; i < tblLineItems.Rows.Count; i++)
             {
@@ -793,26 +692,57 @@ namespace IMETPO
                     row_index = i + 1;
                 }
             }
-            foreach (LineItem li in working.lineitems)
+            // This is how we manage the default 5-row thing on the request page.  A hidden field stores the list of GUIDs assigned to the rows, which in turn links to the line items that
+            // might already be in the request.
+            string rows = (string)GetSessionValue("rowids");//hiddenLineItemIDs.Value;
+            List<string> ids = new List<string>();
+            if (string.IsNullOrEmpty(rows))
             {
-                if (li.state == LineItem.LineItemState.deleted)
-                    continue;
+                for (i = 0; i < working.lineitems.Count; i++)
+                {
+                    ids.Add(working.lineitems[i].lineitemid.ToString());
+                }                
+            }
+            else
+            {
+                string[] tokens = rows.Split(",".ToCharArray());
+                ids.AddRange(tokens);
+            }
 
+            // If the number of rows is less than the desired number, make a whole bunch of new guids and keep adding them.
+            while (ids.Count < num_rows)
+            {
+                Guid newid = Guid.NewGuid();
+                ids.Add(newid.ToString());
+            }
+            bool editable = mode == "submit" || mode == "edit" || mode == "approve" || mode == "purchase";         
+            // Add a row to the table for each line item (or desired blank row)
+            for (i = 0; i < num_rows; i++)
+            {
+                LineItem li = null;
+                if(i < working.lineitems.Count)
+                    li = working.lineitems[i];
+
+                // Add a control for each field in the line item (or blank, if there is not yet a line item).
+                Guid rowid = new Guid(ids[i]);
+                if (li != null && li.state == LineItem.LineItemState.deleted)
+                    continue;                
                 TableRow tr = new TableRow();
                 TableCell tc = new TableCell();
                 TextBox txt = new TextBox();
                 txt.CssClass = "TextQuantity";
                 txt.Width = Unit.Percentage(100);
-                txt.ID = "txtQuantity_" + li.lineitemid.ToString();
-                if (initValues)
+                txt.ID = "txtQuantity_" + rowid.ToString();
+                txt.Attributes.Add("onchange", "updateTotal();");
+                if (initValues && li != null)
                     txt.Text = li.qty.ToString();
-                if (mode == "submit" || mode == "edit")
+                if (editable)
                 {
-                    txt.ReadOnly = false;
+                    txt.Enabled = true;
                 }
                 else
                 {
-                    txt.ReadOnly = true;
+                    txt.Enabled = false;
                 }
                 tc.Controls.Add(txt);
                 tr.Cells.Add(tc);
@@ -821,16 +751,16 @@ namespace IMETPO
                 txt = new TextBox();
                 txt.CssClass = "TextUOM";
                 txt.Width = Unit.Percentage(100);
-                txt.ID = "txtUOM_" + li.lineitemid.ToString();
-                if (initValues)
+                txt.ID = "txtUOM_" + rowid.ToString();
+                if (initValues && li != null)
                     txt.Text = li.unit;
-                if (mode == "submit" || mode == "edit")
+                if (editable)
                 {
-                    txt.ReadOnly = false;
+                    txt.Enabled = true;
                 }
                 else
                 {
-                    txt.ReadOnly = true;
+                    txt.Enabled = false;
                 }
                 tc.Controls.Add(txt);
                 tr.Cells.Add(tc);
@@ -838,17 +768,17 @@ namespace IMETPO
                 tc = new TableCell();
                 txt = new TextBox();
                 txt.CssClass = "TextLineItemNumber";
-                txt.ID = "txtLineItemNumber_" + li.lineitemid.ToString();
+                txt.ID = "txtLineItemNumber_" + rowid.ToString();
                 txt.Width = Unit.Percentage(100);
-                if (initValues)
+                if (initValues && li != null)
                     txt.Text = li.itemnumber;
-                if (mode == "submit" || mode == "edit")
+                if (editable)
                 {
-                    txt.ReadOnly = false;
+                    txt.Enabled = true;
                 }
                 else
                 {
-                    txt.ReadOnly = true;
+                    txt.Enabled = false;
                 }
                 tc.Controls.Add(txt);
                 tr.Cells.Add(tc);
@@ -857,57 +787,60 @@ namespace IMETPO
                 txt = new TextBox();
                 txt.CssClass = "TextLineItemDesc";
                 txt.Width = Unit.Percentage(100);
-                txt.ID = "txtLineItemDesc_" + li.lineitemid.ToString();
-                if (initValues)
+                txt.ID = "txtLineItemDesc_" + rowid.ToString();
+                if (initValues && li != null)
                     txt.Text = li.description;
-                if (mode == "submit" || mode == "edit")
+                if (editable)
                 {
-                    txt.ReadOnly = false;
+                    txt.Enabled = true;
                 }
                 else
                 {
-                    txt.ReadOnly = true;
+                    txt.Enabled = false;
                 }
+                tc.ColumnSpan = 2;
                 tc.Controls.Add(txt);
                 tr.Cells.Add(tc);
 
-                
+
 
                 tc = new TableCell();
                 txt = new TextBox();
                 txt.CssClass = "TextUnitPrice";
-                txt.ID = "txtUnitPrice_" + li.lineitemid.ToString();
+                txt.ID = "txtUnitPrice_" + rowid.ToString();
+                txt.Attributes.Add("onchange", "updateTotal();");
                 txt.Width = Unit.Percentage(100);
-                if (initValues)
+                if (initValues && li != null)
                     txt.Text = li.unitprice.ToString();
-                if (mode == "submit" || mode == "edit")
+                if (editable)
                 {
-                    txt.ReadOnly = false;
+                    txt.Enabled = true;
                 }
                 else
                 {
-                    txt.ReadOnly = true;
+                    txt.Enabled = false;
                 }
                 tc.Controls.Add(txt);
                 tr.Cells.Add(tc);
 
                 tc = new TableCell();
                 Label lbl = new Label();
-                lbl.CssClass = "LabelUnitPrice";
-                lbl.ID = "lblTotalPrice_" + li.lineitemid.ToString();
-                if (initValues)
+                lbl.CssClass = "LabelUnitPrice";                
+                lbl.ID = "lblTotalPrice_" + rowid.ToString();
+                if (initValues && li != null)
                     lbl.Text = (li.qty * li.unitprice).ToString();
-                if (mode == "submit" || mode == "edit")
+                if (editable)
                 {
-                    txt.ReadOnly = false;
+                    txt.Enabled = true;
                 }
                 else
                 {
-                    txt.ReadOnly = true;
+                    txt.Enabled = false;
                 }
                 tc.Controls.Add(lbl);
                 tr.Cells.Add(tc);
 
+                // Show or hide the "receive" fields, based on mode of the page.
                 if (mode == "receive" || mode == "close")
                 {
                     tc = new TableCell();
@@ -915,11 +848,12 @@ namespace IMETPO
 
                     txt = new TextBox();
                     txt.CssClass = "TextQtyReceived";
-                    txt.ID = "txtQuantityReceived_" + li.lineitemid.ToString();
+                    txt.ID = "txtQuantityReceived_" + rowid.ToString();
+                    txt.Attributes.Add("onchange", "checkInt('" + txt.ID + "');");
                     txt.Width = Unit.Percentage(100);
                     if (mode == "close")
-                        txt.ReadOnly = true;
-                    if (initValues)
+                        txt.Enabled = false;
+                    if (initValues && li != null)
                     {
                         if (li.qtyreceived < 0)
                         {
@@ -932,38 +866,50 @@ namespace IMETPO
                         }
                     }
                     tc.Controls.Add(txt);
-                }
-                if (mode == "purchase" || mode == "receive" || mode == "close")
-                {                    
+                    tr.Cells.Add(tc);
+
                     tc = new TableCell();
                     CheckBox ch = new CheckBox();
-                    ch.ID = "chkInventoryIMET_" + li.lineitemid.ToString();
+                    ch.ID = "chkReceived_" + rowid.ToString();
+                    ch.Text = "Received";
+                    if (initValues && li != null)
+                        ch.Checked = li.state.HasFlag(IMETPOClasses.LineItem.LineItemState.received);
+                    if (mode == "close")
+                        ch.Enabled = false;
+                    tc.Controls.Add(ch);
+                    tr.Cells.Add(tc);
+                }
+                // Hide or show the purchase fields, based on the mode of the request.
+                if ((mode == "purchase") && CurrentUser.UserPermissions.Contains(IMETPOClasses.User.Permission.purchaser))
+                {
+                    tc = new TableCell();
+                    CheckBox ch = new CheckBox();
+                    ch.ID = "chkInventoryIMET_" + rowid.ToString();
                     ch.Text = "IMET Inventory";
-                    if (initValues)
+                    if (initValues && li != null)
                         ch.Checked = li.inventoryIMET;
                     if (mode == "close")
                         ch.Enabled = false;
                     tc.Controls.Add(ch);
 
+                    System.Web.UI.HtmlControls.HtmlGenericControl gen = new System.Web.UI.HtmlControls.HtmlGenericControl("br");
+                    tc.Controls.Add(gen);
+
                     ch = new CheckBox();
-                    ch.ID = "chkInventoryMD_" + li.lineitemid.ToString();
+                    ch.ID = "chkInventoryMD_" + rowid.ToString();
                     ch.Text = "MD Inventory";
-                    if (initValues)
+                    if (initValues && li != null)
                         ch.Checked = li.inventoryMD;
                     if (mode == "close")
                         ch.Enabled = false;
                     tc.Controls.Add(ch);
 
                     tr.Cells.Add(tc);
-                }                
+                }
                 string link = string.Empty;
                 if (mode == "submit" || mode == "edit")
                 {
-                    link += "<a class=\"squarebutton\" href=\"javascript:submitLineItem('" + li.lineitemid.ToString() + "')\"><span>Update</span></a>&nbsp;&nbsp;&nbsp;<a class=\"squarebutton\" href=\"javascript:deleteLineItem('" + li.lineitemid.ToString() + "')\"><span>Delete</span></a>";
-                }
-                else if (mode == "purchase" || mode == "receive")
-                {
-                    link += "<a class=\"squarebutton\" href=\"javascript:submitLineItem('" + li.lineitemid.ToString() + "')\"><span>Update</span></a>";
+                    link += "<a class=\"squarebutton\" href=\"javascript:deleteLineItem('" + rowid.ToString() + "')\"><span>Delete</span></a>";
                 }
                 tc = new TableCell();
                 tc.Text = link;
@@ -971,71 +917,242 @@ namespace IMETPO
                 tblLineItems.Rows.AddAt(row_index, tr);
                 row_index += 1;
             }
+            rows = ids[0];
+            for (i = 1; i < ids.Count; i++)
+                rows = rows + "," + ids[i];
+            hiddenLineItemIDs.Value = rows;
+            SetSessionValue("rowids", rows);
+            // Populate the miscellaneous charges.
             if (string.IsNullOrEmpty(txtMiscCharges.Text))
                 txtMiscCharges.Text = string.Format("{0:0.00}", working.misccharge);
             if (string.IsNullOrEmpty(txtShippingCharges.Text))
-                txtShippingCharges.Text = string.Format("{0:0.00}", working.misccharge);
+                txtShippingCharges.Text = string.Format("{0:0.00}", working.shipcharge);
             if (string.IsNullOrEmpty(txtTaxCharges.Text))
                 txtTaxCharges.Text = string.Format("{0:0.00}", working.taxcharge);
             working.misccharge = float.Parse(txtMiscCharges.Text);
             working.shipcharge = float.Parse(txtShippingCharges.Text);
             working.taxcharge = float.Parse(txtTaxCharges.Text);
             lblTotalPrice.Text = string.Format("{0:C}", working.TotalPrice);
-            hiddenLineItemTotal.Value = working.LineItemTotal.ToString();
+            
         }
 
-        protected void btnAddNewLineItem_Click(object sender, EventArgs e)
-        {
-            SqlConnection conn = ConnectToConfigString("imetpsconnection");
-            PurchaseRequest working = (PurchaseRequest)GetSessionValue("WorkingPurchaseRequest");
-            try
-            {
-                LineItem li = new LineItem();
-                try
-                {
-                    li.qty = int.Parse(txtQuantity_new.Text);
-                }
-                catch (Exception)
-                {
-                    ShowAlert("You must enter a valid quantity for that line item.");
-                    return;
-                }
-                li.unit = txtUOM_new.Text;
-                li.description = txtLineItemDesc_new.Text;
-                li.itemnumber = txtLineItemNumber_new.Text;
-                try
-                {
-                    li.unitprice = float.Parse(txtUnitPrice_new.Text);
-                }
-                catch (Exception)
-                {
-                    ShowAlert("You must enter a valid unit price for that line item.");
-                    return;
-                }
-                li.lineitemid = Guid.NewGuid();
-                working.lineitems.Add(li);
-                PopulateLineItems(conn, working, true);
-                // PopulateData(conn, working, false);
-                SetSessionValue("WorkingPurchaseRequest", working);
-            }
-            catch (Exception ex)
-            {
-                HandleError(ex);
-            }
-            finally
-            {
-                conn.Close();
-            }
-        }
-
-        protected void btnSubmit_Click(object sender, EventArgs e)
+        // Add some blank rows to the line items table.
+        protected void btnAddRows_Click(object sender, EventArgs e)
         {            
             SqlConnection conn = ConnectToConfigString("imetpsconnection");
             PurchaseRequest working = (PurchaseRequest)GetSessionValue("WorkingPurchaseRequest");
             string mode = GetExecMode(working);
-            ReadInputs(working);
+            string rows = (string)GetSessionValue("rowids");// hiddenLineItemIDs.Value;
+            string[] tokens = rows.Split(",".ToCharArray());
+            int num_rows = tokens.Length + 5;
+            int i = 0;
+            int row_index = 0;
+            for (i = 0; i < tblLineItems.Rows.Count; i++)
+            {
+                if (tblLineItems.Rows[i].GetType() == typeof(TableHeaderRow))
+                {
+                    row_index = i + 1;
+                }
+                if (tblLineItems.Rows[i].GetType() == typeof(TableFooterRow))
+                {
+                    row_index = i;
+                }
+            }
+            // This is a re-creation of a lot of the logic above, which is inefficient, but eh.  There's no check for existing line items, as all new rows are going to be blank.
+            for (i = 0; i < num_rows; i++)
+            {
+                Guid rowid = Guid.Empty;
+                rowid = Guid.NewGuid();
+                if (string.IsNullOrEmpty(rows))
+                    rows = rowid.ToString();
+                else
+                    rows = rows + "," + rowid.ToString();
+                TableRow tr = new TableRow();
+                TableCell tc = new TableCell();
+                TextBox txt = new TextBox();
+                txt.CssClass = "TextQuantity";
+                txt.Width = Unit.Percentage(100);
+                txt.ID = "txtQuantity_" + rowid.ToString();
+                txt.Attributes.Add("onchange", "updateTotal();");
+                if (mode == "submit" || mode == "edit" || mode == "approve")
+                {
+                    txt.Enabled = true;
+                }
+                else
+                {
+                    txt.Enabled = false;
+                }
+                tc.Controls.Add(txt);
+                tr.Cells.Add(tc);
+
+                tc = new TableCell();
+                txt = new TextBox();
+                txt.CssClass = "TextUOM";
+                txt.Width = Unit.Percentage(100);
+                txt.ID = "txtUOM_" + rowid.ToString();
+                if (mode == "submit" || mode == "edit" || mode == "approve")
+                {
+                    txt.Enabled = true;
+                }
+                else
+                {
+                    txt.Enabled = false;
+                }
+                tc.Controls.Add(txt);
+                tr.Cells.Add(tc);
+
+                tc = new TableCell();
+                txt = new TextBox();
+                txt.CssClass = "TextLineItemNumber";
+                txt.ID = "txtLineItemNumber_" + rowid.ToString();
+                txt.Width = Unit.Percentage(100);
+                if (mode == "submit" || mode == "edit" || mode == "approve")
+                {
+                    txt.Enabled = true;
+                }
+                else
+                {
+                    txt.Enabled = false;
+                }
+                tc.Controls.Add(txt);
+                tr.Cells.Add(tc);
+
+                tc = new TableCell();
+                txt = new TextBox();
+                txt.CssClass = "TextLineItemDesc";
+                txt.Width = Unit.Percentage(100);
+                txt.ID = "txtLineItemDesc_" + rowid.ToString();
+                if (mode == "submit" || mode == "edit" || mode == "approve")
+                {
+                    txt.Enabled = true;
+                }
+                else
+                {
+                    txt.Enabled = false;
+                }
+                tc.ColumnSpan = 2;
+                tc.Controls.Add(txt);
+                tr.Cells.Add(tc);
+
+
+
+                tc = new TableCell();
+                txt = new TextBox();
+                txt.CssClass = "TextUnitPrice";
+                txt.ID = "txtUnitPrice_" + rowid.ToString();
+                txt.Attributes.Add("onchange", "updateTotal();");
+                txt.Width = Unit.Percentage(100);
+                if (mode == "submit" || mode == "edit" || mode == "approve")
+                {
+                    txt.Enabled = true;
+                }
+                else
+                {
+                    txt.Enabled = false;
+                }
+                tc.Controls.Add(txt);
+                tr.Cells.Add(tc);
+
+                tc = new TableCell();
+                Label lbl = new Label();
+                lbl.CssClass = "LabelUnitPrice";
+                lbl.ID = "lblTotalPrice_" + rowid.ToString();
+                if (mode == "submit" || mode == "edit" || mode == "approve")
+                {
+                    txt.Enabled = true;
+                }
+                else
+                {
+                    txt.Enabled = false;
+                }
+                tc.Controls.Add(lbl);
+                tr.Cells.Add(tc);
+
+                if (mode == "receive")
+                {
+                    tc = new TableCell();
+                    tr.Cells.Add(tc);
+
+                    txt = new TextBox();
+                    txt.CssClass = "TextQtyReceived";
+                    txt.ID = "txtQuantityReceived_" + rowid.ToString();
+                    txt.Attributes.Add("onchange", "checkInt('" + txt.ID + "');");
+                    txt.Width = Unit.Percentage(100);
+                    if (mode == "close")
+                        txt.Enabled = false;
+                    tc.Controls.Add(txt);
+                    tr.Cells.Add(tc);
+
+                    tc = new TableCell();
+                    CheckBox ch = new CheckBox();
+                    ch.ID = "chkReceived_" + rowid.ToString();
+                    ch.Text = "Received";
+                    if (mode == "close")
+                        ch.Enabled = false;
+                    tc.Controls.Add(ch);
+                    tr.Cells.Add(tc);
+                }
+                if (mode == "purchase")
+                {
+                    tc = new TableCell();
+                    CheckBox ch = new CheckBox();
+                    ch.ID = "chkInventoryIMET_" + rowid.ToString();
+                    ch.Text = "IMET Inventory";
+                    if (mode == "close")
+                        ch.Enabled = false;
+                    tc.Controls.Add(ch);
+
+                    System.Web.UI.HtmlControls.HtmlGenericControl gen = new System.Web.UI.HtmlControls.HtmlGenericControl("br");
+                    tc.Controls.Add(gen);
+
+                    ch = new CheckBox();
+                    ch.ID = "chkInventoryMD_" + rowid.ToString();
+                    ch.Text = "MD Inventory";
+                    if (mode == "close")
+                        ch.Enabled = false;
+                    tc.Controls.Add(ch);
+
+                    tr.Cells.Add(tc);
+                }
+                string link = string.Empty;
+                if (mode == "submit" || mode == "edit")
+                {
+                    link += "<a class=\"squarebutton\" href=\"javascript:deleteLineItem('" + rowid.ToString() + "')\"><span>Delete</span></a>";
+                }
+                tc = new TableCell();
+                tc.Text = link;
+                tr.Cells.Add(tc);
+                tblLineItems.Rows.AddAt(row_index, tr);
+                row_index += 1;
+            }
+            hiddenLineItemIDs.Value = rows;
+            SetSessionValue("rowids", rows);
+            conn.Close();
+        }
+
+        // The user clicked the submit button.  We have to check a bunch of fields, and then copy the data to the underlying object.
+        protected void btnSubmit_Click(object sender, EventArgs e)
+        {
+            SqlConnection conn = ConnectToConfigString("imetpsconnection");
+            PurchaseRequest working = (PurchaseRequest)GetSessionValue("WorkingPurchaseRequest");
+            string mode = GetExecMode(working);
+            bool purchaser_notes_updated = false;
+            // Create a flag indicating that the purchaser notes have been updated.
+            if (!txtPurchaserNotes.ReadOnly && txtPurchaserNotes.Visible)
+            {
+                if (!string.IsNullOrEmpty(txtPurchaserNotes.Text))
+                {
+                    purchaser_notes_updated = true;
+                }
+            }            
             try
             {
+                List<LineItem> new_received_items = new List<LineItem>();
+                // Read the inputs.
+                if (!ReadInputs(working, new_received_items))
+                {
+                    return;
+                }
                 if (working.state == PurchaseRequest.RequestState.opened)
                 {
                     if (comboVendors.SelectedValue == "NEW")
@@ -1048,7 +1165,7 @@ namespace IMETPO
                     }
                     if (string.IsNullOrEmpty(comboFASNumber.SelectedValue))
                     {
-                        ShowAlert("You must select a FAS number to continue.");
+                        ShowAlert("You must select an account number to continue.");
                         return;
                     }
                     if (string.IsNullOrEmpty(txtDescription.Text))
@@ -1057,8 +1174,20 @@ namespace IMETPO
                         return;
                     }
                 }
+                if (mode == "purchase")
+                {
+                    if (chkPurchaseComplete.Checked)
+                    {
+                        if (string.IsNullOrEmpty(txtRequisitionNumber.Text))
+                        {
+                            ShowAlert("You must enter a requisition number for this request to be flagged as purchased.");
+                            return;
+                        }
+                    }
+                }
                 if (comboVendors.SelectedValue != "NEW")
                 {
+                    // Load the current vendor, if the vendor already exists.
                     Guid vid = new Guid(comboVendors.SelectedValue);
                     Vendor v = new Vendor();
                     v.Load(conn, vid);
@@ -1066,6 +1195,7 @@ namespace IMETPO
                 }
                 else
                 {
+                    // Otherwise, create a new vendor and notify the administrators.
                     Vendor v = new Vendor();
                     v.vendorname = txtVendorName.Text;
                     v.url = txtVendorURL.Text;
@@ -1097,6 +1227,7 @@ namespace IMETPO
                     }
                     working.vendorid = v;
                 }
+                // Load the FAS number selected.
                 if (!string.IsNullOrEmpty(comboFASNumber.SelectedValue))
                 {
                     working.fasnumber = new FASNumber();
@@ -1110,38 +1241,58 @@ namespace IMETPO
                 if (string.IsNullOrEmpty(working.tagnumber))
                 {
                     working.tagnumber = PurchaseRequest.GenerateTagNumber(conn, CurrentUser.username);
-                }
+                }                
 
                 bool needs_acknowledgement = false;
                 PurchaseRequest.RequestState old_state = working.state;
-
+                // If the state is new, there are a whole bunch of things to do.
                 if (working.state == PurchaseRequest.RequestState.opened)
                 {
                     needs_acknowledgement = true;
                     working.state = PurchaseRequest.RequestState.pending;
                     working.SetLineItemState(LineItem.LineItemState.pending);
 
+                    // Create a "new request" transaction.
                     Guid requestorid = new Guid(comboRequester.SelectedValue);
-                    working.history.Add(new RequestTransaction(RequestTransaction.TransactionType.Created, CurrentUser.userid, CurrentUser.username, working.description));
-                    working.history.Add(new RequestTransaction(RequestTransaction.TransactionType.Opened, requestorid, comboRequester.SelectedItem.Text, working.description));
+                    if (requestorid != CurrentUser.userid)
+                    {
+                        User requestor = new IMETPOClasses.User();
+                        requestor.Load(conn, requestorid);
+                        working.history.Add(new RequestTransaction(RequestTransaction.TransactionType.Opened, requestor.userid, comboRequester.SelectedItem.Text, working.description, requestor.FullName));
+                    }
+                    else
+                    {
+                        working.history.Add(new RequestTransaction(RequestTransaction.TransactionType.Opened, CurrentUser.userid, comboRequester.SelectedItem.Text, working.description, CurrentUser.FullName));
+                    }
+                    working.history.Add(new RequestTransaction(RequestTransaction.TransactionType.Created, CurrentUser.userid, CurrentUser.username, working.description, CurrentUser.FullName));                    
                     bool can_approve = false;
+                    string str_bypass_limit = Utils.GetSystemSetting(conn, "accountbypasslimit");
+                    double bypass_limit = double.NaN;
+                    if (!string.IsNullOrEmpty(str_bypass_limit))
+                    {
+                        bypass_limit = double.Parse(str_bypass_limit);
+                    }
                     if (working.fasnumber != null)
                     {
                         foreach (FASPermission p in working.fasnumber.Permissions)
                         {
-                            if (p.permission == IMETPOClasses.User.Permission.approver && p.userid == CurrentUser.userid)
+                            if (p.userid == CurrentUser.userid)
                             {
-                                can_approve = true;
-                                break;
+                                if (p.permission == IMETPOClasses.User.Permission.approver || (p.permission == IMETPOClasses.User.Permission.accountbypasser && !double.IsNaN(bypass_limit) && working.TotalPrice <= bypass_limit))
+                                {
+                                    can_approve = true;
+                                    break;
+                                }
                             }
                         }
                     }
+                    // If the user can approve for this account, auto-approve it.
                     if (can_approve)
                     {
                         working.state = PurchaseRequest.RequestState.approved;
                         working.SetLineItemState(LineItem.LineItemState.approved);
-                        working.history.Add(new RequestTransaction(RequestTransaction.TransactionType.Approved, CurrentUser.userid, CurrentUser.username, "Auto-approved because requestor has approval permissions: " + working.executornotes));
-                    }                    
+                        working.history.Add(new RequestTransaction(RequestTransaction.TransactionType.Approved, CurrentUser.userid, CurrentUser.username, "Auto-approved because requestor has approval permissions: " + working.executornotes, CurrentUser.FullName));
+                    }
                 }
                 else if (mode == "purchase")
                 {
@@ -1150,24 +1301,39 @@ namespace IMETPO
                     {
                         working.state = PurchaseRequest.RequestState.purchased;
                         working.SetLineItemState(LineItem.LineItemState.purchased);
-                        working.history.Add(new RequestTransaction(RequestTransaction.TransactionType.Purchased, CurrentUser.userid, CurrentUser.username, working.purchasernotes));
+                        working.history.Add(new RequestTransaction(RequestTransaction.TransactionType.Purchased, CurrentUser.userid, CurrentUser.username, working.purchasernotes, CurrentUser.FullName));
                     }
-                }
+                }                
                 else if (mode == "receive")
                 {
-                    if (chkReceiveComplete.Checked)
+                    bool is_received = true;
+                    foreach (LineItem li in working.lineitems)
+                    {
+                        if (!li.state.HasFlag(IMETPOClasses.LineItem.LineItemState.received))
+                        {
+                            is_received = false;
+                        }
+                    }
+                    if (is_received)
                     {
                         working.state = PurchaseRequest.RequestState.received;
-                        working.SetLineItemState(LineItem.LineItemState.received);
-                        working.history.Add(new RequestTransaction(RequestTransaction.TransactionType.Received, CurrentUser.userid, CurrentUser.username, string.Empty));
+                        working.history.Add(new RequestTransaction(RequestTransaction.TransactionType.Received, CurrentUser.userid, CurrentUser.username, string.Empty, CurrentUser.FullName));                        
                     }
                 }
                 else
                 {
-                    working.history.Add(new RequestTransaction(RequestTransaction.TransactionType.Modified, CurrentUser.userid, CurrentUser.username, "Request revised."));
+                    working.history.Add(new RequestTransaction(RequestTransaction.TransactionType.Modified, CurrentUser.userid, CurrentUser.username, "Request revised.", CurrentUser.FullName));
                 }
+                if (purchaser_notes_updated)
+                {
+                    working.history.Add(new RequestTransaction(RequestTransaction.TransactionType.Modified, CurrentUser.userid, CurrentUser.username, working.purchasernotes, CurrentUser.FullName));
+                }
+                // Save the working request.
                 working.Save(conn);
+                // Repopulate the page with the saved request information.
                 PopulateData(conn, working, true);
+
+                // If it is a new request, send an email to all approvers if the requestor is not an approver.
                 if (old_state == PurchaseRequest.RequestState.opened)
                 {
                     bool can_approve = false;
@@ -1203,7 +1369,7 @@ namespace IMETPO
                         if (to.Count > 0)
                         {
                             string subject = "[" + GetApplicationSetting("applicationTitle") + "]: Purchase made by " + CurrentUser.username + " against " + working.fasnumber.Number;
-                            string body = "<p>A Purchase Request has been made against FAS number " + working.fasnumber.Number + " (" + working.fasnumber.Description + ") ";
+                            string body = "<p>A Purchase Request has been made against account number " + working.fasnumber.Number + " (" + working.fasnumber.Description + ") ";
                             body += "by " + CurrentUser.username + " using " + GetApplicationSetting("applicationSubtitle") + ". You are being notified because the ";
                             body += "system indicates you are an executor of this FAS. This request will not be ";
                             body += "sent on for purchase until you approve it. You can also choose to reject the request, ";
@@ -1217,13 +1383,84 @@ namespace IMETPO
                             body += "Thank you,<br/>" + GetApplicationSetting("applicationTitle") + " System";
                             SendEmail(to.ToArray<string>(), null, bcc.ToArray<string>(), subject, body);
                         }
-                    }                    
+                    }
                 }
-                if (mode == "purchase")
+                // If the request has been purchased, or the purchase notes have been updated, send a note to the requestor and the approver.
+                if (mode == "purchase" || purchaser_notes_updated)
                 {
-                    if (chkPurchaseComplete.Checked)
+                    if (chkPurchaseComplete.Checked || purchaser_notes_updated)
                     {
                         Guid requestorid = working.GetTransactionUser(RequestTransaction.TransactionType.Opened);
+                        Guid ownerid = working.fasnumber.OwnerID;
+                        Guid approverid = working.GetTransactionUser(RequestTransaction.TransactionType.Approved);
+                        if (requestorid != Guid.Empty)
+                        {
+                            User u = new User();
+                            u.Load(conn, requestorid);
+
+                            List<string> to = new List<string>();
+                            List<string> bcc = new List<string>();
+                            bcc.Add("smcginnis@umces.edu");
+                            if (!u.UserPermissions.Contains(IMETPOClasses.User.Permission.noemail))
+                                to.Add(u.email);
+                            if (ownerid != requestorid)
+                            {
+                                u = new User();
+                                u.Load(conn, ownerid);
+                                if (!u.UserPermissions.Contains(IMETPOClasses.User.Permission.noemail))
+                                    to.Add(u.email);
+                            }
+                            if (ownerid != approverid && requestorid != approverid && approverid != Guid.Empty)
+                            {
+                                u = new User();
+                                u.Load(conn, approverid);
+                                if (!u.UserPermissions.Contains(IMETPOClasses.User.Permission.noemail))
+                                    to.Add(u.email);
+                            }
+                            // to.Add("smcginnis@hpl.umces.edu");
+                            if (to.Count > 0)
+                            {
+                                string subject = string.Empty;
+                                string body = string.Empty;
+                                if (purchaser_notes_updated)
+                                {
+                                    subject = "[" + GetApplicationSetting("applicationTitle") + "]: Purchase Request Updates";
+                                    body = "<p>The purchaser has added additional notes to this request:</p><ul>";
+                                }
+                                else
+                                {
+                                    subject = "[" + GetApplicationSetting("applicationTitle") + "]: Purchase Request Purchased";
+                                    body = "<p>Your purchase request has been purchased:</p><ul>";
+                                }                                
+                                body += "<li>Account Number: " + working.fasnumber.Number + "</li>";
+                                body += "<li>Description: " + working.description + "</li>";
+                                body += "<li>Purchased by: " + CurrentUser.username + "</li>";
+                                body += "<li>Purchaser notes: " + working.purchasernotes + "</li>";
+                                body += "</ul>";
+                                body += "<p><a href='http://" + GetApplicationSetting("hostAddress") + "/ViewRequest.aspx?REQUESTID=" + working.requestid.ToString() + "'>Click here to view this request.</a></p>";
+                                body += "Thank you,<br/>" + GetApplicationSetting("applicationTitle") + " System";
+                                SendEmail(to.ToArray<string>(), null, bcc.ToArray<string>(), subject, body);
+                            }
+                        }
+                    }
+                    ShowAlert("Information saved. Email has been sent to the requestor and approver.");
+                }
+                // If the request has been received, and the receiver is not the requester, send out a message.
+                else if (mode == "receive")
+                {
+                    bool is_received = true;
+                    foreach (LineItem li in working.lineitems)
+                    {
+                        if (!li.state.HasFlag(LineItem.LineItemState.received))
+                        {
+                            is_received = false;
+                            break;
+                        }
+                    }
+                    if (is_received)
+                    {
+                        Guid requestorid = working.GetTransactionUser(RequestTransaction.TransactionType.Opened);
+                        Guid approverid = working.GetTransactionUser(RequestTransaction.TransactionType.Approved);
                         Guid ownerid = working.fasnumber.OwnerID;
 
                         if (requestorid != Guid.Empty)
@@ -1243,44 +1480,10 @@ namespace IMETPO
                                 if (!u.UserPermissions.Contains(IMETPOClasses.User.Permission.noemail))
                                     to.Add(u.email);
                             }
-                            // to.Add("smcginnis@hpl.umces.edu");
-                            if (to.Count > 0)
-                            {
-                                string subject = "[" + GetApplicationSetting("applicationTitle") + "]: Purchase Request Purchased";
-                                string body = "<p>Your purchase request has been purchased:</p><ul>";
-                                body += "<li>Account Number: " + working.fasnumber.Number + "</li>";
-                                body += "<li>Description: " + working.description + "</li>";
-                                body += "<li>Purchased by: " + CurrentUser.username + "</li>";
-                                body += "</ul>";
-                                body += "<p><a href='http://" + GetApplicationSetting("hostAddress") + "/ViewRequest.aspx?REQUESTID=" + working.requestid.ToString() + "'>Click here to view this request.</a></p>";
-                                body += "Thank you,<br/>" + GetApplicationSetting("applicationTitle") + " System";
-                                SendEmail(to.ToArray<string>(), null, bcc.ToArray<string>(), subject, body);
-                            }
-                        }
-                    }
-                    ShowAlert("Changes saved.");
-                }
-                else if (mode == "receive")
-                {
-                    if (chkReceiveComplete.Checked)
-                    {
-                        Guid requestorid = working.GetTransactionUser(RequestTransaction.TransactionType.Opened);
-                        Guid ownerid = working.fasnumber.OwnerID;
-
-                        if (requestorid != Guid.Empty)
-                        {
-                            User u = new User();
-                            u.Load(conn, requestorid);
-
-                            List<string> to = new List<string>();
-                            List<string> bcc = new List<string>();
-                            bcc.Add("smcginnis@umces.edu");
-                            if (!u.UserPermissions.Contains(IMETPOClasses.User.Permission.noemail))
-                                to.Add(u.email);
-                            if (ownerid != requestorid)
+                            if (approverid != requestorid)
                             {
                                 u = new User();
-                                u.Load(conn, ownerid);
+                                u.Load(conn, approverid);
                                 if (!u.UserPermissions.Contains(IMETPOClasses.User.Permission.noemail))
                                     to.Add(u.email);
                             }
@@ -1305,6 +1508,66 @@ namespace IMETPO
                 {
                     ShowAlert("Changes saved.");
                 }
+                // Go through newly received items, and if the items need to be inventoried, send an email to all inventoriers.
+                if (new_received_items.Count > 0)
+                {
+                    int i = 0;
+                    while (i < new_received_items.Count)
+                    {
+                        if (!new_received_items[i].inventoryIMET && !new_received_items[i].inventoryMD)
+                        {
+                            new_received_items.RemoveAt(i);
+                        }
+                        else
+                        {
+                            i += 1;
+                        }
+                    }
+                    if (new_received_items.Count > 0)
+                    {
+                        List<User> inventoriers = IMETPOClasses.User.LoadUsersWithPermission(conn, IMETPOClasses.User.Permission.inventory);
+                        if (inventoriers.Count > 0)
+                        {
+                            List<string> to = new List<string>();
+                            foreach (User u in inventoriers)
+                            {
+                                if (!string.IsNullOrEmpty(u.email) && !to.Contains(u.email) && !u.UserPermissions.Contains(IMETPOClasses.User.Permission.noemail))
+                                {
+                                    to.Add(u.email);
+                                }
+                            }
+                            List<string> bcc = new List<string>();
+                            bcc.Add("smcginnis@umces.edu");
+                            // to.Add("smcginnis@hpl.umces.edu");
+                            if (to.Count > 0)
+                            {
+                                string subject = "[" + GetApplicationSetting("applicationTitle") + "]: Request " + working.tagnumber + " line item(s) awaiting inventory";
+                                string body = "<p>One or more line items has been received that is flagged for inventory. Following is a summary ";
+                                body += "of the request:</p>";
+                                body += "<ul><li>IPS Number: " + working.tagnumber + "</li>";
+                                body += "<li>Description: " + working.description + "</li>";
+                                foreach (LineItem li in new_received_items)
+                                {
+                                    body += "<li>Item: (" + li.itemnumber + ") " + li.description;
+                                    if (li.inventoryIMET)
+                                    {
+                                        body += " (IMET)";
+                                    }
+                                    if (li.inventoryMD)
+                                    {
+                                        body += " (MD)";
+                                    }
+                                    body += "</li>";
+                                }
+                                body += "<li>Action Required: INVENTORY</li></ul>";                                
+                                body += "<p><a href='http://" + GetApplicationSetting("hostAddress") + "/SubmitRequest.aspx?REQUESTID=" + working.requestid.ToString() + "'>Click here to view this request.</a></p>";
+                                body += "Thank you,<br/>" + GetApplicationSetting("applicationTitle") + " System";
+                                SendEmail(to.ToArray<string>(), null, bcc.ToArray<string>(), subject, body);
+                            }
+                        }
+                    }
+                }
+                // If the request needs an acknowledgement, bounce to the acknowledge version of the View page.
                 if (needs_acknowledgement)
                 {
                     string ack_url = "ViewRequest.aspx?REQUESTID=" + working.requestid.ToString() + "&ACK=1";
@@ -1316,6 +1579,7 @@ namespace IMETPO
             {
                 ShowAlert("An error occurred while saving your request.  It may not be saved.\n  Message: " + ex.Message);
                 SendErrorNotification(ex.Message, ex.StackTrace);
+                throw ex;
             }
             finally
             {
@@ -1323,12 +1587,20 @@ namespace IMETPO
             }
         }
 
-        protected void ReadInputs(PurchaseRequest working)
+        /// <summary>
+        /// Copy the values in the page's controls to the request.
+        /// </summary>
+        /// <param name="working">The working version of the request</param>
+        /// <param name="new_received_items">A list (output) that needs to be populated with any newly-received items.</param>
+        /// <returns></returns>
+        protected bool ReadInputs(PurchaseRequest working, List<LineItem> new_received_items)
         {
+            // Copy the header-level text fields.
             if (!txtDescription.ReadOnly && txtDescription.Visible)
                 working.description = txtDescription.Text;
             if (!txtRequestorNotes.ReadOnly && txtRequestorNotes.Visible)
                 working.requestornotes = txtRequestorNotes.Text;
+            // Copy the miscellaneous charge fields.
             if (!txtMiscCharges.ReadOnly)
             {
                 if (!string.IsNullOrEmpty(txtMiscCharges.Text))
@@ -1340,7 +1612,7 @@ namespace IMETPO
                     catch (FormatException)
                     {
                         ShowAlert("The miscellaneous charge is not a valid number.");
-                        return;
+                        return false;
                     }
                 }
                 else
@@ -1357,7 +1629,7 @@ namespace IMETPO
                     catch (FormatException)
                     {
                         ShowAlert("The shipping charge is not a valid number.");
-                        return;
+                        return false;
                     }
                 }
                 else
@@ -1374,12 +1646,13 @@ namespace IMETPO
                     catch (FormatException)
                     {
                         ShowAlert("The tax charge is not a valid number.");
-                        return;
+                        return false;
                     }
                 }
                 else
                     working.taxcharge = 0;
             }
+            // Copy all of the notes values.
             if (!txtExecutorNotes.ReadOnly && txtExecutorNotes.Visible)
                 working.executornotes = txtExecutorNotes.Text;
             if (!txtPurchaserNotes.ReadOnly && txtPurchaserNotes.Visible)
@@ -1388,21 +1661,143 @@ namespace IMETPO
                 working.requisitionnumber = txtRequisitionNumber.Text;
             if (!txtCartLink.ReadOnly && txtCartLink.Visible)
                 working.shoppingcarturl = txtCartLink.Text;
+            string rowids = (string)GetSessionValue("rowids");
+            string[] ids = rowids.Split(",".ToCharArray());
+            List<LineItem> new_items = new List<LineItem>();
+            // Iterate through the line items and copy them based on the IDS in the rowids hidden controls.
+            for (int i = 0; i < ids.Length; i++)
+            {
+                if (string.IsNullOrEmpty(ids[i]))
+                    continue;
+                Guid rowid = new Guid(ids[i]);                
+                TextBox uom_txt = (TextBox)Page.FindControl("txtUOM_" + rowid.ToString());
+                TextBox desc_txt = (TextBox)Page.FindControl("txtLineItemDesc_" + rowid.ToString());
+                TextBox num_txt = (TextBox)Page.FindControl("txtLineItemNumber_" + rowid.ToString());
+                TextBox price_txt = (TextBox)Page.FindControl("txtUnitPrice_" + rowid.ToString());
+                TextBox qty_txt = (TextBox)Page.FindControl("txtQuantity_" + rowid.ToString());
+                if (uom_txt == null || desc_txt == null || num_txt == null || price_txt == null || qty_txt == null)
+                    continue;
+                bool is_filled = !string.IsNullOrEmpty(uom_txt.Text) || !string.IsNullOrEmpty(desc_txt.Text) || !string.IsNullOrEmpty(num_txt.Text) || !string.IsNullOrEmpty(price_txt.Text) || !string.IsNullOrEmpty(qty_txt.Text);
+                bool is_complete = !string.IsNullOrEmpty(uom_txt.Text) && !string.IsNullOrEmpty(desc_txt.Text) && !string.IsNullOrEmpty(num_txt.Text) && !string.IsNullOrEmpty(price_txt.Text) && !string.IsNullOrEmpty(qty_txt.Text);
+                bool read_only = !uom_txt.Enabled && !desc_txt.Enabled && !num_txt.Enabled && !price_txt.Enabled && !qty_txt.Enabled;
+
+                if (!is_filled && !read_only)
+                    continue;
+                if (is_filled && !is_complete && !read_only)
+                {
+                    ShowAlert("There is at least one partially-filled line item.  Please delete all unused line items, or complete the line item in question.");
+                    return false;
+                }
+                LineItem li = null;
+                foreach (LineItem li2 in working.lineitems)
+                {
+                    if (li2.lineitemid == rowid)
+                    {
+                        li = li2;
+                        break;
+                    }
+                }
+                if (li == null)
+                    li = new LineItem();
+                if (!read_only)
+                {
+                    try
+                    {
+                        li.qty = int.Parse(qty_txt.Text);
+                    }
+                    catch (Exception)
+                    {
+                        ShowAlert("You must enter a valid quantity for that line item: " + desc_txt.Text);
+                        return false;
+                    }
+                    li.unit = uom_txt.Text;
+                    li.description = desc_txt.Text;
+                    li.itemnumber = num_txt.Text;
+                    try
+                    {
+                        li.unitprice = float.Parse(price_txt.Text);
+                    }
+                    catch (Exception)
+                    {
+                        ShowAlert("You must enter a valid price for that line item: " + desc_txt.Text);
+                        return false;
+                    }
+                }
+                TextBox qty_rcd = (TextBox)Page.FindControl("txtQuantityReceived_" + rowid.ToString());
+                if (qty_rcd != null)
+                {
+                    try
+                    {
+                        li.qtyreceived = int.Parse(qty_rcd.Text);
+                    }
+                    catch (FormatException)
+                    {
+                    }
+                }
+                CheckBox chk = (CheckBox)Page.FindControl("chkReceived_" + rowid.ToString());
+                if (chk != null)
+                {
+                    if (chk.Checked)
+                    {
+                        if (new_received_items != null)
+                        {
+                            if (!li.state.HasFlag(LineItem.LineItemState.received) && !new_received_items.Contains(li))
+                            {
+                                new_received_items.Add(li);
+                            }
+                        }
+                        li.state |= LineItem.LineItemState.received;
+                    }
+                }
+                chk = (CheckBox)Page.FindControl("chkInventoryIMET_" + rowid.ToString());
+                if (chk != null)
+                {
+                    if (chk.Checked)
+                    {
+                        li.inventoryIMET = true;
+                    }
+                    else
+                    {
+                        li.inventoryIMET = false;
+                    }
+                }
+                chk = (CheckBox)Page.FindControl("chkInventoryMD_" + rowid.ToString());
+                if (chk != null)
+                {
+                    if (chk.Checked)
+                    {
+                        li.inventoryMD = true;
+                    }
+                    else
+                    {
+                        li.inventoryMD = false;
+                    }
+                }
+                new_items.Add(li);
+            }
+            working.lineitems.Clear();
+            working.lineitems.AddRange(new_items);            
+            return true;
         }
 
+        // The user clicked the "approve" button.
         protected void btnApprove_Click(object sender, EventArgs e)
         {
             PurchaseRequest working = (PurchaseRequest)GetSessionValue("WorkingPurchaseRequest");
             SqlConnection conn = ConnectToConfigString("imetpsconnection");
             try
             {
+                // Copy any changes to the request.
+                if (!ReadInputs(working, null))
+                    return;
+                // Put the relevant approval transactions in the history.
                 working.state = PurchaseRequest.RequestState.approved;
                 working.SetLineItemState(LineItem.LineItemState.approved);
-                working.history.Add(new RequestTransaction(RequestTransaction.TransactionType.Approved, CurrentUser.userid, CurrentUser.username, working.executornotes));
-                working.Save(conn);
-                ShowAlert("Request approved.");
+                working.history.Add(new RequestTransaction(RequestTransaction.TransactionType.Approved, CurrentUser.userid, CurrentUser.username, working.executornotes, CurrentUser.FullName));
+                working.Save(conn);                
                 Guid requestorid = working.GetTransactionUser(RequestTransaction.TransactionType.Opened);
                 Guid ownerid = working.fasnumber.OwnerID;
+                // Send an email to the requestor if the requestor is not the approver.
                 if (requestorid != Guid.Empty && requestorid != CurrentUser.userid)
                 {
                     User u = new User();
@@ -1423,7 +1818,7 @@ namespace IMETPO
                     if (to.Count > 0)
                     {
                         string subject = "[" + GetApplicationSetting("applicationTitle") + "]: Request " + working.tagnumber + " accepted by " + CurrentUser.username;
-                        string body = "<p>A request on your FAS Number " + working.fasnumber.Number + " (" + working.fasnumber.Description + ") was accepted by " + CurrentUser.username + ", who has the ability ";
+                        string body = "<p>A request on your Account Number " + working.fasnumber.Number + " (" + working.fasnumber.Description + ") was accepted by " + CurrentUser.username + ", who has the ability ";
                         body += "to approve requests on your behalf. No action is required on your part. The request will be ";
                         body += "forwarded for purchase. Following is a summary of the request:</p>";
                         body += "<ul><li>IPS Number: " + working.tagnumber + "</li>";
@@ -1437,6 +1832,7 @@ namespace IMETPO
                         SendEmail(to.ToArray<string>(), null, bcc.ToArray<string>(), subject, body);
                     }
                 }
+                // Send an email to the purchasers in the system telling them that the request is ready to purchase.
                 List<User> purchasers = IMETPOClasses.User.LoadUsersWithPermission(conn, IMETPOClasses.User.Permission.purchaser);
                 if (purchasers.Count > 0)
                 {
@@ -1467,6 +1863,7 @@ namespace IMETPO
                     }
                 }
                 PopulateData(conn, working, true);
+                ShowAlertWithRedirect("Purchase approved.  E-mail sent to IMET Admin Office.", "Default.aspx");
             }
             catch (Exception ex)
             {
@@ -1474,24 +1871,29 @@ namespace IMETPO
             }
             finally
             {
-                if(conn != null)
+                if (conn != null)
                     conn.Close();
             }
         }
 
+        // The user hit the "reject" button.
         protected void btnReject_Click(object sender, EventArgs e)
         {
             PurchaseRequest working = (PurchaseRequest)GetSessionValue("WorkingPurchaseRequest");
             SqlConnection conn = ConnectToConfigString("imetpsconnection");
             try
             {
+                if (!ReadInputs(working, null))
+                    return;
+                // Put a reject transaction in the history.
                 working.state = PurchaseRequest.RequestState.rejected;
                 working.SetLineItemState(LineItem.LineItemState.rejected);
-                working.history.Add(new RequestTransaction(RequestTransaction.TransactionType.Rejected, CurrentUser.userid, CurrentUser.username, working.executornotes));
+                working.history.Add(new RequestTransaction(RequestTransaction.TransactionType.Rejected, CurrentUser.userid, CurrentUser.username, working.executornotes, CurrentUser.FullName));
                 working.Save(conn);
                 ShowAlert("Request rejected.");
                 Guid requestorid = working.GetTransactionUser(RequestTransaction.TransactionType.Opened);
                 Guid ownerid = working.fasnumber.OwnerID;
+                // Send an email to the requestor, telling them that the request was rejected.
                 if (requestorid != Guid.Empty && requestorid != CurrentUser.userid)
                 {
                     User u = new User();
@@ -1536,17 +1938,59 @@ namespace IMETPO
             }
         }
 
-        protected void btnClose_Click(object sender, EventArgs e)
+        // The user hit the "Override Auto-Approve" button.
+        protected void btnOverrideAutoApprove_Click(object sender, EventArgs e)
         {
             PurchaseRequest working = (PurchaseRequest)GetSessionValue("WorkingPurchaseRequest");
             SqlConnection conn = ConnectToConfigString("imetpsconnection");
             try
             {
-                working.state = PurchaseRequest.RequestState.closed;
-                working.SetLineItemState(LineItem.LineItemState.closed);
-                working.history.Add(new RequestTransaction(RequestTransaction.TransactionType.Closed, CurrentUser.userid, CurrentUser.username, string.Empty));
-                ShowAlert("Request closed.");
+                // Update the request.
+                if (!ReadInputs(working, null))
+                    return;
+                // Add the request to the history.
+                working.state = PurchaseRequest.RequestState.pending;
+                working.SetLineItemState(LineItem.LineItemState.pending);
+                working.history.Add(new RequestTransaction(RequestTransaction.TransactionType.Modified, CurrentUser.userid, CurrentUser.username, "Auto-approved request returned for approval.", CurrentUser.FullName));
                 working.Save(conn);
+                List<string> to = new List<string>();
+                foreach (FASPermission f in working.fasnumber.Permissions)
+                {
+                    if (f.permission == IMETPOClasses.User.Permission.approver)
+                    {
+                        IMETPOClasses.User u = new User();
+                        u.Load(conn, f.userid);
+                        if (!string.IsNullOrEmpty(u.email) && !to.Contains(u.email) && !u.UserPermissions.Contains(IMETPOClasses.User.Permission.noemail))
+                        {
+                            to.Add(u.email);
+                        }
+                    }
+                }
+                List<string> bcc = new List<string>();
+                bcc.Add("smcginnis@umces.edu");
+                Guid requestorid = working.GetTransactionUser(RequestTransaction.TransactionType.Opened);
+                User requestor = new User();
+                // Send an email to the requestor and any approvers for this account.
+                requestor.Load(conn, requestorid);
+                // to.Add("smcginnis@hpl.umces.edu");
+                if (to.Count > 0)
+                {
+                    string subject = "[" + GetApplicationSetting("applicationTitle") + "]: Purchase made by " + requestor.username + " against " + working.fasnumber.Number;
+                    string body = "<p>A Purchase Request has been made against account number " + working.fasnumber.Number + " (" + working.fasnumber.Description + ") ";
+                    body += "by " + requestor.username + " using " + GetApplicationSetting("applicationSubtitle") + ". You are being notified because the ";
+                    body += "system indicates you are an executor of this FAS. This request will not be ";
+                    body += "sent on for purchase until you approve it. You can also choose to reject the request, ";
+                    body += "causing it to go back to the requestor for modification. Following is a summary of ";
+                    body += "the request:</p>";
+                    body += "<ul><li>IPS Number: " + working.tagnumber + "</li>";
+                    body += "<li>Description: " + working.description + "</li>";
+                    body += "<li>Requestor Notes: " + working.requestornotes + "</li>";
+                    body += "<li>Action needed: APPROVAL/REJECTION</li></ul>";
+                    body += "<p><a href='http://" + GetApplicationSetting("hostAddress") + "/SubmitRequest.aspx?REQUESTID=" + working.requestid.ToString() + "'>Click here to view this request.</a></p>";
+                    body += "Thank you,<br/>" + GetApplicationSetting("applicationTitle") + " System";
+                    SendEmail(to.ToArray<string>(), null, bcc.ToArray<string>(), subject, body);
+                }
+                ShowAlert("Request returned.");                
                 PopulateData(conn, working, true);
             }
             catch (Exception ex)
@@ -1559,48 +2003,53 @@ namespace IMETPO
                     conn.Close();
             }
         }
-
+       
+        // The user hit the delete button.
         protected void btnDelete_Click(object sender, EventArgs e)
         {
             PurchaseRequest working = (PurchaseRequest)GetSessionValue("WorkingPurchaseRequest");
             SqlConnection conn = ConnectToConfigString("imetpsconnection");
             try
             {
-                working.state = PurchaseRequest.RequestState.deleted;
-                working.SetLineItemState(LineItem.LineItemState.deleted);
-                working.history.Add(new RequestTransaction(RequestTransaction.TransactionType.Deleted, CurrentUser.userid, CurrentUser.username, string.Empty));
-                ShowAlert("Request deleted.");
-                working.Save(conn);
-                Guid requestorid = working.GetTransactionUser(RequestTransaction.TransactionType.Opened);
-                Guid ownerid = working.fasnumber.OwnerID;
-                if (requestorid != Guid.Empty)
+                if (working != null)
                 {
-                    User u = new User();
-                    u.Load(conn, requestorid);
-                    List<string> to = new List<string>();
-                    List<string> bcc = new List<string>();
-                    bcc.Add("smcginnis@umces.edu");
-                    if (!u.UserPermissions.Contains(IMETPOClasses.User.Permission.noemail))
-                        to.Add(u.email);
-                    if (ownerid != requestorid)
+                    // Set the request to "deleted" and email the requestor.
+                    working.state = PurchaseRequest.RequestState.deleted;
+                    working.SetLineItemState(LineItem.LineItemState.deleted);
+                    working.history.Add(new RequestTransaction(RequestTransaction.TransactionType.Deleted, CurrentUser.userid, CurrentUser.username, string.Empty, CurrentUser.FullName));
+                    ShowAlert("Request deleted.");
+                    working.Save(conn);
+                    Guid requestorid = working.GetTransactionUser(RequestTransaction.TransactionType.Opened);
+                    Guid ownerid = working.fasnumber.OwnerID;
+                    if (requestorid != Guid.Empty)
                     {
-                        u = new User();
-                        u.Load(conn, ownerid);
+                        User u = new User();
+                        u.Load(conn, requestorid);
+                        List<string> to = new List<string>();
+                        List<string> bcc = new List<string>();
+                        bcc.Add("smcginnis@umces.edu");
                         if (!u.UserPermissions.Contains(IMETPOClasses.User.Permission.noemail))
                             to.Add(u.email);
-                    }
-                    if (to.Count > 0)
-                    {
-                        string subject = "[" + GetApplicationSetting("applicationTitle") + "]: Request " + working.tagnumber + " deleted";
-                        string body = "<p>Your request, IPS Number " + working.tagnumber + ", has been marked as deleted. Following is a ";
-                        body += "summary of the request:</p>";
-                        body += "<ul><li>IPS Number: " + working.tagnumber + "</li>";
-                        body += "<li>Description: " + working.description + "</li>";
-                        body += "<li>Purchaser Notes: " + working.purchasernotes + "</li>";
-                        body += "<li>Action Required: NONE</li></ul>";
-                        body += "<p><a href='http://" + GetApplicationSetting("hostAddress") + "/ViewRequest.aspx?REQUESTID=" + working.requestid.ToString() + "'>Click here to view this request.</a></p>";
-                        body += "Thank you,<br/>" + GetApplicationSetting("applicationTitle") + " System";
-                        SendEmail(to.ToArray<string>(), null, bcc.ToArray<string>(), subject, body);
+                        if (ownerid != requestorid)
+                        {
+                            u = new User();
+                            u.Load(conn, ownerid);
+                            if (!u.UserPermissions.Contains(IMETPOClasses.User.Permission.noemail))
+                                to.Add(u.email);
+                        }
+                        if (to.Count > 0)
+                        {
+                            string subject = "[" + GetApplicationSetting("applicationTitle") + "]: Request " + working.tagnumber + " deleted";
+                            string body = "<p>Your request, IPS Number " + working.tagnumber + ", has been marked as deleted. Following is a ";
+                            body += "summary of the request:</p>";
+                            body += "<ul><li>IPS Number: " + working.tagnumber + "</li>";
+                            body += "<li>Description: " + working.description + "</li>";
+                            body += "<li>Purchaser Notes: " + working.purchasernotes + "</li>";
+                            body += "<li>Action Required: NONE</li></ul>";
+                            body += "<p><a href='http://" + GetApplicationSetting("hostAddress") + "/ViewRequest.aspx?REQUESTID=" + working.requestid.ToString() + "'>Click here to view this request.</a></p>";
+                            body += "Thank you,<br/>" + GetApplicationSetting("applicationTitle") + " System";
+                            SendEmail(to.ToArray<string>(), null, bcc.ToArray<string>(), subject, body);
+                        }
                     }
                 }
                 working = new PurchaseRequest();
@@ -1617,6 +2066,7 @@ namespace IMETPO
             }
         }
 
+        // Load the details of the vendor when the selected vendor changes.
         protected void comboVendors_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (comboVendors.SelectedValue == "NEW")
@@ -1677,43 +2127,98 @@ namespace IMETPO
             }
         }
 
+        // Process the "upload" button, which adds an attachment to the request.
         protected void btnUpload_Click(object sender, EventArgs e)
         {
             SqlConnection conn = ConnectToConfigString("imetpsconnection");
             PurchaseRequest working = (PurchaseRequest)GetSessionValue("WorkingPurchaseRequest");
             try
             {
+                // Create a new attached file.
                 AttachedFile af = new AttachedFile();
                 af.ID = Guid.NewGuid();
                 string filepath = GetApplicationSetting("filesavepath") + af.ID.ToString();
                 af.Filename = uploadAttachment.FileName;
                 af.Path = filepath;
+                // Save the attachment.
                 uploadAttachment.SaveAs(filepath);
                 af.Save(conn, Guid.Empty);
 
-                working.attachments.Clear();
+                // working.attachments.Clear();
                 working.attachments.Add(af);
                 // PopulateData(conn, working, false);
                 SetSessionValue("WorkingPurchaseRequest", working);
-                if (working.attachments.Count > 0)
-                {
-                    string linkurl = "<a href='DownloadAttachment.aspx?ATTACHMENTID=" + working.attachments[0].ID.ToString() + "' target='_blank'>Download " + working.attachments[0].Filename + "</a>";
-                    filedownloadlink.InnerHtml = linkurl;
-                    
-                }
-                else
-                {
-                    filedownloadlink.InnerHtml = string.Empty;
-                }
+                PopulateAttachments(working);
                 // PopulateData(conn, working, true);
             }
             catch (Exception ex)
             {
+                ShowAlert("Could not upload file: " + ex.Message + "\n" + ex.StackTrace);
                 HandleError(ex);
             }
             finally
             {
                 conn.Close();
+            }
+        }
+
+        /// <summary>
+        /// Populate the list of attachments for this current request
+        /// </summary>
+        /// <param name="working">The current request.</param>
+        protected void PopulateAttachments(PurchaseRequest working)
+        {
+            if (working.attachments.Count > 0)
+            {
+                string linkurl = "<table border='0'>";
+                foreach (AttachedFile f in working.attachments)
+                {
+                    string download_link = "<a href='DownloadAttachment.aspx?ATTACHMENTID=" + f.ID.ToString() + "' target='_blank'>Download " + f.Filename + "</a>";
+                    string remove_link = "<a href='javascript:removeAttachment(\"" + f.ID.ToString() + "\")'>Remove " + f.Filename + "</a>";
+                    // It's just a table; add a download link in a table cell for each row.
+                    linkurl += "<tr><td>" + download_link + "</td><td>" + remove_link + "</td></tr>";
+                }
+                linkurl += "</table>";
+                filedownloadlink.InnerHtml = linkurl;
+            }
+            else
+            {
+                filedownloadlink.InnerHtml = string.Empty;
+            }
+        }
+
+        // Remove an attachment.
+        protected void RemoveAttachment(Guid attachmentid)
+        {
+            SqlConnection conn = ConnectToConfigString("imetpsconnection");
+            try
+            {
+                PurchaseRequest working = (PurchaseRequest)GetSessionValue("WorkingPurchaseRequest");
+                for (int i = 0; i < working.attachments.Count; i++)
+                {
+                    AttachedFile af = working.attachments[i];
+                    if (af.ID == attachmentid)
+                    {
+                        af.DeleteLocalCopy();
+                        working.attachments.RemoveAt(i);
+                        break;
+                    }
+                }
+                PopulateAttachments(working);
+                if (working.state != PurchaseRequest.RequestState.opened)
+                {
+                    working.Save(conn);
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowAlert("An error occurred: " + ex.Message + " " + ex.StackTrace);
+                HandleError(ex);
+            }
+            finally
+            {
+                if (conn != null)
+                    conn.Close();
             }
         }
     }

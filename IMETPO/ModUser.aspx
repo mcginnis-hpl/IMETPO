@@ -5,27 +5,92 @@
 <head runat="server">
     <title>IMET Purchasing System</title>
     <link href="Styles/imetps.css?t=<%= DateTime.Now.Ticks %>" type="text/css" rel="stylesheet" />
+    <script language="javascript" type="text/javascript">
+        function sstchur_SmartScroller_GetCoords() {
+            var scrollX, scrollY;
+
+            if (document.all) {
+                if (!document.documentElement.scrollTop)
+                    scrollY = document.body.scrollTop;
+                else
+                    scrollY = document.documentElement.scrollTop;
+            }
+            else {
+                scrollY = window.pageYOffset;
+            }
+
+            document.forms["form1"].hiddenScrollPos.value = scrollY;
+        }
+
+        function sstchur_SmartScroller_Scroll() {
+            var y = document.forms["form1"].hiddenScrollPos.value;
+            window.scrollTo(0, y);
+        }
+
+        window.onload = sstchur_SmartScroller_Scroll;
+        window.onscroll = sstchur_SmartScroller_GetCoords;
+        window.onkeypress = sstchur_SmartScroller_GetCoords;
+        window.onclick = sstchur_SmartScroller_GetCoords;
+    </script>
 </head>
 <body>
     <form id="form1" runat="server">
-    <div class="top">
-        <h1>
-            <span id="appTitle" runat="server"></span></h1>
-        <p>
-            <span id="appSubtitle" runat="server"></span></p>
+    <div id="headerTitle" class="banner" runat="server">
+        <img class="logo" src="images/IMET_logo.png" width="398" height="72" alt="IMET" />
+    </div>
+    <div id="title" class="title">
+        <center>
+            <span id="titlespan" runat="server"></span>
+        </center>
     </div>
     <div id="mainbody" class="content">
         <div id="backlink">
             <a href="Default.aspx">Return to main menu</a>
         </div>
         <div id="adminInfo" runat="server" class="menu">
-            <h3>System Values</h3>
+            <h3>
+                System Values</h3>
             <table class="mainmenu">
-                <tr><td>Fiscal Year:</td><td>
-                    <asp:TextBox ID="txtFiscalYear" runat="server"></asp:TextBox></td></tr>
-                    <tr><td>
-                        <asp:LinkButton CssClass="squarebutton" ID="btnUpdateSystemValues" runat="server" 
-                            onclick="btnUpdateSystemValues_Click"><span>Update System Values</span></asp:LinkButton></td><td></td></tr>
+                <tr>
+                    <td>
+                        Account Bypass Limit:
+                    </td>
+                    <td>
+                        <asp:TextBox ID="txtAccountBypassLimit" runat="server"></asp:TextBox>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Email Nag Cutoff in Days (Approval):
+                    </td>
+                    <td>
+                        <asp:TextBox ID="txtApproverNagFrequency" runat="server"></asp:TextBox>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Email Nag Cutoff in Days (Purchase Pending):
+                    </td>
+                    <td>
+                        <asp:TextBox ID="txtPurchaserNagFrequency" runat="server"></asp:TextBox>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Email Nag Cutoff in Days (Receiver):
+                    </td>
+                    <td>
+                        <asp:TextBox ID="txtReceiverNagFrequency" runat="server"></asp:TextBox>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <asp:LinkButton CssClass="squarebutton" ID="btnUpdateSystemValues" runat="server"
+                            OnClick="btnUpdateSystemValues_Click"><span>Update System Values</span></asp:LinkButton>
+                    </td>
+                    <td>
+                    </td>
+                </tr>
             </table>
         </div>
         <div id="userInfo" runat="server" class="menu">
@@ -69,6 +134,22 @@
                 </tr>
                 <tr>
                     <td>
+                        First name:
+                    </td>
+                    <td>
+                        <asp:TextBox ID="txtFirstName" runat="server" Width="320px"></asp:TextBox>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Last name:
+                    </td>
+                    <td>
+                        <asp:TextBox ID="txtLastName" runat="server" Width="320px"></asp:TextBox>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
                         Password:
                     </td>
                     <td>
@@ -85,11 +166,17 @@
                 </tr>
                 <tr>
                     <td colspan="2">
-                        <asp:CheckBox ID="chkDoNotEmail" runat="server" Text="Do not send this user email notifications." /></td>
+                        <asp:CheckBox ID="chkDoNotEmail" runat="server" Text="Do not send this user email notifications." />
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <asp:LinkButton CssClass="squarebutton" ID="btnSubmit" runat="server" OnClick="btnSubmit_Click"><span>Submit</span></asp:LinkButton>
+                    </td>
                 </tr>
             </table>
-            <asp:LinkButton CssClass="squarebutton" ID="btnSubmit" runat="server" OnClick="btnSubmit_Click"><span>Submit</span></asp:LinkButton>
             <asp:HiddenField ID="hiddenUserID" runat="server" />
+            <asp:HiddenField ID="hiddenScrollPos" runat="server" />
         </div>
         <div id="permissions" runat="server" class="menu">
             <h3>
@@ -120,7 +207,9 @@
                     </td>
                 </tr>
             </table>
-            <p style="font-style: italic">Permissions changes are saved automatically -- you do not need to hit "submit" to save your work.</p>
+            <p style="font-style: italic">
+                Permissions changes are saved automatically -- you do not need to hit "submit" to
+                save your work.</p>
         </div>
     </div>
     </form>

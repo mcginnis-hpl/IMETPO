@@ -12,7 +12,7 @@
     <div class="top">
         <table border="0" width="100%">
             <tr>
-                <td align="left" style="width:30%">
+                <td align="left" style="width:60%">
                     <img src="images/IMET_logo.png" style="width: 100%" alt="IMET: Institute of Marine & Environmental Technology"
                         runat="server" id="logoImage" />
                 </td>
@@ -26,6 +26,9 @@
                 </td>
             </tr>
         </table>
+    </div>   
+    <div style="margin-left:auto; margin-right:auto;width: 400px;">
+        <h1><span id="top_requisition" runat="server"></span></h1>
     </div>
     <div id="mainbody" class="content">
         <div id="header" class="menu">
@@ -144,34 +147,22 @@
             <table border="0px" width="90%">
                 <tr>
                     <td>
-                        <strong>Requestor's Justification:</strong>
-                    </td>
-                    <td>
-                        <span id="span_justification" runat="server"></span>
+                        <strong>Requestor's Justification: </strong><span id="span_justification" runat="server"></span>
                     </td>
                 </tr>
                 <tr>
                     <td>
-                        <strong>Requestor Notes:</strong>
-                    </td>
-                    <td>
-                        <span id="span_requestornotes" runat="server"></span>
+                        <strong>Requestor Notes: </strong><span id="span_requestornotes" runat="server"></span>
                     </td>
                 </tr>
                 <tr>
                     <td>
-                        <strong>Approver Notes:</strong>
-                    </td>
-                    <td>
-                        <span id="span_executornotes" runat="server"></span>
+                        <strong>Approver Notes: </strong><span id="span_executornotes" runat="server"></span>
                     </td>
                 </tr>
                 <tr>
                     <td>
-                        <strong>Purchaser Notes:</strong>
-                    </td>
-                    <td>
-                        <span id="span_purchasernotes" runat="server"></span>
+                        <strong>Purchaser Notes: </strong><span id="span_purchasernotes" runat="server"></span>
                     </td>
                 </tr>
             </table>

@@ -17,11 +17,11 @@
 </head>
 <body>
     <form id="form1" runat="server">
-    <div class="top">
-        <h1>
-            <span id="appTitle" runat="server"></span></h1>
-        <p>
-            <span id="appSubtitle" runat="server"></span></p>
+    <div id="headerTitle" class="banner" runat="server">
+        <img class="logo" src="images/IMET_logo.png" width="398" height="72" alt="IMET" />
+    </div>
+    <div id="title" class="title">
+        <center><span id="titlespan" runat="server"></span></center>
     </div>
     <div id="mainbody" class="content">
         <div id="backlink">

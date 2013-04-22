@@ -11,6 +11,9 @@ using IMETPOClasses;
 
 namespace IMETPO
 {
+    /// <summary>
+    /// This is a page for managing the account numbers.
+    /// </summary>
     public partial class FASNumbers : imetspage
     {
         protected override void OnInit(EventArgs e)
@@ -31,6 +34,7 @@ namespace IMETPO
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            // Redirect the user to the landing page if they are not authenticated.
             if (!IsAuthenticated)
             {
                 string url = "Default.aspx?RETURNURL=" + Request.Url.ToString();
@@ -39,7 +43,8 @@ namespace IMETPO
             }
             try
             {
-                PopulateHeader(appTitle, appSubtitle);
+                PopulateHeader(titlespan);
+                // Process any hidden commands (from the javascript)
                 if (!string.IsNullOrEmpty(hiddenUpdateNumber.Value))
                 {
                     SqlConnection conn = ConnectToConfigString("imetpsconnection");
@@ -61,9 +66,11 @@ namespace IMETPO
             }
         }
 
+        // Update an account with new information from the page.
         protected void UpdateFASNumber(SqlConnection conn, string num)
         {
             FASNumber new_f = new FASNumber();
+            // Find the text control for this number on the page and pull the account number.
             TextBox txt = (TextBox)Page.FindControl("txtFRSNumber_" + num);
             new_f.Number = txt.Text;
             if (string.IsNullOrEmpty(new_f.Number))
@@ -71,6 +78,7 @@ namespace IMETPO
                 ShowAlert("You must enter a valid FRS Number to save.");
                 return;
             }
+            // Grab the description from the page and update it.
             txt = (TextBox)Page.FindControl("txtFRSDesc_" + num);
             new_f.Description = txt.Text;
             DropDownList exec = (DropDownList)Page.FindControl("comboFRSExecutor_" + num);
@@ -79,11 +87,14 @@ namespace IMETPO
                 ShowAlert("You must enter a valid owner to save.");
                 return;
             }
+            // Add all permissions to the owner of this account.
             new_f.Permissions.Add(new FASPermission(new Guid(exec.SelectedValue), IMETPOClasses.User.Permission.owner));
             new_f.Permissions.Add(new FASPermission(new Guid(exec.SelectedValue), IMETPOClasses.User.Permission.requestor));
-            new_f.Permissions.Add(new FASPermission(new Guid(exec.SelectedValue), IMETPOClasses.User.Permission.approver));
+            new_f.Permissions.Add(new FASPermission(new Guid(exec.SelectedValue), IMETPOClasses.User.Permission.approver));            
+
             CheckBox check = (CheckBox)Page.FindControl("chkFRSDisabled_" + num);
             new_f.Disabled = check.Checked;
+            // Save the updated account to the database.
             new_f.Save(conn);
             if (num == "new")
             {
@@ -92,8 +103,13 @@ namespace IMETPO
                 comboFRSExecutor_new.SelectedIndex = 0;
                 chkFRSDisabled_new.Checked = false;
             }
+            else
+            {
+                ShowAlert("Account updated.");
+            }
         }
 
+        // Populate the permission controls for an account.
         protected void PopulatePermissions(SqlConnection conn)
         {
             if (string.IsNullOrEmpty(hiddenPermissions.Value))
@@ -102,13 +118,16 @@ namespace IMETPO
                 return;
             }
 
+            // This is in here to manage the javascript (when an account is selected for the first time, clear out the items; otherwise, leave them there)
             if (hiddenPermissions.Value.IndexOf("NEW:") >= 0)
             {
                 listAvailableRequestors.Items.Clear();
                 listRequestors.Items.Clear();
                 listApprovers.Items.Clear();
+                listBypassApprovers.Items.Clear();
                 hiddenPermissions.Value = hiddenPermissions.Value.Substring(4);
             }
+            // Get the owner of the account.
             string control_id = "comboFRSExecutor_" + hiddenPermissions.Value;
             DropDownList executor_list = (DropDownList)Page.FindControl(control_id);
             if (executor_list == null)
@@ -119,9 +138,10 @@ namespace IMETPO
                 return;
             }
             permissions.Visible = true;
-            if (listAvailableRequestors.Items.Count > 0 || listRequestors.Items.Count > 0 || listApprovers.Items.Count > 0)
+            if (listAvailableRequestors.Items.Count > 0 || listRequestors.Items.Count > 0 || listApprovers.Items.Count > 0 || listBypassApprovers.Items.Count > 0)
                 return;
 
+            // Get the list of users that are child users of the owner.
             SqlCommand cmd = null;
             SqlDataReader reader = null;
             Guid ownerid = new Guid(executor_list.SelectedValue);
@@ -140,14 +160,20 @@ namespace IMETPO
             };
             cmd.Parameters.Add(new SqlParameter("@inuserid", ownerid));
             reader = cmd.ExecuteReader();
+            List<string> userids = new List<string>();
             while (reader.Read())
             {
                 string username = reader["username"].ToString();
                 string userid = reader["userid"].ToString();
-                listAvailableRequestors.Items.Add(new ListItem(username, userid));
+                if (!userids.Contains(userid))
+                {
+                    listAvailableRequestors.Items.Add(new ListItem(username, userid));
+                    userids.Add(userid);
+                }
             }
             reader.Close();
 
+            // Look up the users who currently have permissions on this account, and put them in the appropriate lists.
             cmd = new SqlCommand()
             {
                 Connection = conn,
@@ -165,19 +191,27 @@ namespace IMETPO
                     listRequestors.Items.Add(new ListItem(username, userid));
                 if (perm == IMETPOClasses.User.Permission.approver)
                     listApprovers.Items.Add(new ListItem(username, userid));
+                if (perm == IMETPOClasses.User.Permission.accountbypasser)
+                    listBypassApprovers.Items.Add(new ListItem(username, userid));
             }
             reader.Close();
         }
 
+        /// <summary>
+        /// Populate the account-level data (stuff unrelated to the permissions)
+        /// </summary>
+        /// <param name="conn"></param>
+        /// <param name="populateData"></param>
         protected void PopulateData(SqlConnection conn, bool populateData)
         {
             List<string> executors = new List<string>();
             List<string> executorids = new List<string>();
+            // Load all users into the list, and put them in the account owner dropdown.
             SqlCommand cmd = new SqlCommand()
             {
                 Connection = conn,
                 CommandType = CommandType.StoredProcedure,
-                CommandText = "sp_LoadUsers"
+                CommandText = "sp_LoadAllUsers"
             };
             comboFRSExecutor_new.Items.Clear();
             comboFRSExecutor_new.Items.Add(new ListItem("", ""));
@@ -196,6 +230,7 @@ namespace IMETPO
             }
             reader.Close();
 
+            // Load all fas numbers and populate the FAS Number fields.
             cmd = new SqlCommand()
             {
                 Connection = conn,
@@ -223,6 +258,7 @@ namespace IMETPO
                 }
             }
             reader = cmd.ExecuteReader();
+            // Create a row for each FAS Number.
             while (reader.Read())
             {
                 string fasnumber = reader["fasnumber"].ToString();
@@ -278,8 +314,8 @@ namespace IMETPO
                 tr.Cells.Add(tc);
 
                 tc = new TableCell();
-                string link = "<a href=\"javascript:submitFASNumber('" + fasnumber + "')\">Modify FRS</a>";
-                link += "&nbsp;&nbsp;&nbsp;<a href=\"javascript:editPermissions('" + fasnumber + "')\">Edit Permissions</a>";
+                string link = "<table border='0'><tr><td><a class='squarebutton' href=\"javascript:submitFASNumber('" + fasnumber + "')\"><span>Save Changes</span></a></td>";
+                link += "<td><a class='squarebutton' href=\"javascript:editPermissions('" + fasnumber + "')\"><span>Edit Permissions</span></a></td></tr></table>";
                 tc.Text = link;
                 tr.Cells.Add(tc);
                 tblFRSNumbers.Rows.AddAt(row_index, tr);
@@ -288,6 +324,11 @@ namespace IMETPO
             reader.Close();
         }
 
+        /// <summary>
+        /// These are all event handlers for adding and removing permissions.  Normally, I would do this in javascript, but the postbacks are pretty minimal, and I'm lazy.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         protected void btnAddRequestor_Click(object sender, EventArgs e)
         {
             try
@@ -307,7 +348,7 @@ namespace IMETPO
                 HandleError(ex);
             }
         }
-
+        
         protected void btnRemoveRequestor_Click(object sender, EventArgs e)
         {
             try
@@ -366,6 +407,50 @@ namespace IMETPO
             }
         }
 
+        protected void btnAddBypassApprover_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (listAvailableRequestors.SelectedIndex < 0)
+                    return;
+                foreach (ListItem li in listBypassApprovers.Items)
+                {
+                    if (li.Value == listAvailableRequestors.SelectedValue)
+                        return;
+                }
+                ListItem new_item = new ListItem(listAvailableRequestors.SelectedItem.Text, listAvailableRequestors.SelectedItem.Value);
+                listBypassApprovers.Items.Add(new_item);
+            }
+            catch (Exception ex)
+            {
+                HandleError(ex);
+            }
+        }
+
+        protected void btnRemoveBypassApprover_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (listBypassApprovers.SelectedIndex < 0)
+                    return;
+                if (listBypassApprovers.SelectedValue == hiddenOwnerid.Value)
+                {
+                    ShowAlert("You can not remove the owner's approver permissions.");
+                    return;
+                }
+                listBypassApprovers.Items.RemoveAt(listBypassApprovers.SelectedIndex);
+            }
+            catch (Exception ex)
+            {
+                HandleError(ex);
+            }
+        }
+
+        /// <summary>
+        /// Save all of the permission changes.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         protected void btnSavePermissionsChanges_Click(object sender, EventArgs e)
         {
             try
@@ -377,9 +462,11 @@ namespace IMETPO
                     CommandType = CommandType.StoredProcedure,
                     CommandText = "sp_clearfasmap"
                 };
+                // Clear all permission data for this FAS number.
                 cmd.Parameters.Add(new SqlParameter("@infasnumber", hiddenPermissions.Value));
                 cmd.ExecuteNonQuery();
                 string query = string.Empty;
+                // For every item in each permission list, add an entry to the FAS map (which maps users to accounts and permissions)
                 foreach (ListItem li in listRequestors.Items)
                 {
                     query += "INSERT INTO users2fas(uid,fasnumber,permission) VALUES('" + li.Value + "', '" + hiddenPermissions.Value + "', " + ((int)IMETPOClasses.User.Permission.requestor).ToString() + ");";
@@ -387,6 +474,10 @@ namespace IMETPO
                 foreach (ListItem li in listApprovers.Items)
                 {
                     query += "INSERT INTO users2fas(uid,fasnumber,permission) VALUES('" + li.Value + "', '" + hiddenPermissions.Value + "', " + ((int)IMETPOClasses.User.Permission.approver).ToString() + ");";
+                }
+                foreach (ListItem li in listBypassApprovers.Items)
+                {
+                    query += "INSERT INTO users2fas(uid,fasnumber,permission) VALUES('" + li.Value + "', '" + hiddenPermissions.Value + "', " + ((int)IMETPOClasses.User.Permission.accountbypasser).ToString() + ");";
                 }
                 if (!string.IsNullOrEmpty(query))
                 {
@@ -404,6 +495,7 @@ namespace IMETPO
                 listRequestors.Items.Clear();
                 listAvailableRequestors.Items.Clear();
                 listApprovers.Items.Clear();
+                listBypassApprovers.Items.Clear();
                 conn.Close();
             }
             catch (Exception ex)

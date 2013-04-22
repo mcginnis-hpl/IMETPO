@@ -7,6 +7,9 @@ using System.Data.SqlClient;
 
 namespace IMETPOClasses
 {
+    /// <summary>
+    ///  A class that encapsulates the data and metadata associated with a purchase request.
+    /// </summary>
     public class PurchaseRequest
     {
         // The request state maps to an int, which is what is stored in the database.  I formulated the values so that they could be OR'd together...force of habit, you would never need to do that.
@@ -80,11 +83,16 @@ namespace IMETPOClasses
         public float shipcharge;
         public float taxcharge;
         public float misccharge;
+        // The account associated with this request
         public FASNumber fasnumber;
+        // The alternate account for orders split between accounts (TODO: Just make it a list, to make it more scalable)
         public FASNumber alt_fasnumber;
+        // Any files attached to this request.
         public List<AttachedFile> attachments;
+        // The URL to the shopping cart for this request.
         public string shoppingcarturl;
 
+        // Another convenience method: return the string component of the associated account.
         public string fasnumberstring
         {
             get
@@ -97,6 +105,7 @@ namespace IMETPOClasses
             }
         }
 
+        // Another convenience method: return the string component of the associated secondary account.
         public string alt_fasnumberstring
         {
             get
@@ -108,18 +117,24 @@ namespace IMETPOClasses
                 return alt_fasnumber.Number;
             }
         }
+        // The line items associated with this request.
         public List<LineItem> lineitems;
+        // The history of this item.
         public List<RequestTransaction> history;
+        // The requisition number for this order.
         public string requisitionnumber;
 
-        // This is a convenience function that mass-updates the line item state, ignoring deleted line items and items that need to be inventoried.
+        /// <summary>
+        /// This is a convenience function that mass-updates the line item state, ignoring deleted line items and items that need to be inventoried.
+        /// </summary>
+        /// <param name="inState">The new state for the line items.</param>
         public void SetLineItemState(LineItem.LineItemState inState)
         {
             foreach (LineItem li in lineitems)
             {
-                if (li.state == LineItem.LineItemState.deleted || li.state == LineItem.LineItemState.inventory)
+                if (li.state.HasFlag(LineItem.LineItemState.deleted))
                     continue;
-                li.state = inState;
+                li.state |= inState;
             }
         }
 
@@ -149,6 +164,10 @@ namespace IMETPOClasses
             attachments = new List<AttachedFile>();
         }
 
+        /// <summary>
+        ///  Save this request's data to the backing database
+        /// </summary>
+        /// <param name="conn">An open connection to the backing database.</param>
         public void Save(SqlConnection conn)
         {
             if (requestid == Guid.Empty)
@@ -179,7 +198,14 @@ namespace IMETPOClasses
             cmd.Parameters.Add(new SqlParameter("@inshipcarge", shipcharge));
             cmd.Parameters.Add(new SqlParameter("@intaxcharge", taxcharge));
             cmd.Parameters.Add(new SqlParameter("@inmisccharge", misccharge));
-            cmd.Parameters.Add(new SqlParameter("@infasnumber", fasnumber.Number));
+            if (fasnumber != null)
+            {
+                cmd.Parameters.Add(new SqlParameter("@infasnumber", fasnumber.Number));
+            }
+            else
+            {
+                cmd.Parameters.Add(new SqlParameter("@infasnumber", string.Empty));
+            }
             if (alt_fasnumber != null)
             {
                 cmd.Parameters.Add(new SqlParameter("@inalt_fasnumber", alt_fasnumber.Number));
@@ -204,6 +230,12 @@ namespace IMETPOClasses
                 f.Save(conn, requestid);
             }
         }
+
+        /// <summary>
+        /// Load the backing data for a request into this request.
+        /// </summary>
+        /// <param name="conn">An open connection to the backing database.</param>
+        /// <param name="inid">The ID of the request to load.</param>
         public void Load(SqlConnection conn, Guid inid)
         {
             SqlCommand cmd = new SqlCommand()
@@ -299,26 +331,32 @@ namespace IMETPOClasses
             }
             reader.Close();
             userid = null;
+            // This section loads all of the related entities
+            // The owner
             if (newuserid != Guid.Empty)
             {
                 userid = new User();
                 userid.Load(conn, newuserid);
             }
+            // The vendor
             if (newvendorid != Guid.Empty)
             {
                 vendorid = new Vendor();
                 vendorid.Load(conn, newvendorid);
             }
+            // The account
             if (!string.IsNullOrEmpty(tmp_fasnumber))
             {
                 fasnumber = new FASNumber();
                 fasnumber.Load(conn, tmp_fasnumber);
             }
+            // The co-account
             if (!string.IsNullOrEmpty(tmp_alt_fasnumber))
             {
                 alt_fasnumber = new FASNumber();
                 alt_fasnumber.Load(conn, tmp_alt_fasnumber);
             }
+            // The line items
             cmd = new SqlCommand()
             {
                 Connection = conn,
@@ -349,6 +387,7 @@ namespace IMETPOClasses
             }
             reader.Close();
 
+            // The history
             cmd = new SqlCommand()
             {
                 Connection = conn,
@@ -368,11 +407,14 @@ namespace IMETPOClasses
                     t.timestamp = DateTime.Parse(reader["transaction_time"].ToString());
                     t.userid = new Guid(reader["userid"].ToString());
                     t.username = reader["username"].ToString();
+                    t.userfullname = reader["fullname"].ToString();
                     t.isLogged = true;
                     history.Add(t);
                 }
             }
             reader.Close();
+
+            // The attached files
             cmd = new SqlCommand()
             {
                 Connection = conn,

@@ -31,22 +31,22 @@ namespace IMETPO {
         protected global::System.Web.UI.HtmlControls.HtmlForm form1;
         
         /// <summary>
-        /// appTitle control.
+        /// headerTitle control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl appTitle;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl headerTitle;
         
         /// <summary>
-        /// appSubtitle control.
+        /// titlespan control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl appSubtitle;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl titlespan;
         
         /// <summary>
         /// header control.
@@ -157,6 +157,78 @@ namespace IMETPO {
         protected global::System.Web.UI.WebControls.TextBox txtVendorDescription;
         
         /// <summary>
+        /// rowVendorContactName control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlTableRow rowVendorContactName;
+        
+        /// <summary>
+        /// txtVendorcontact_name control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtVendorcontact_name;
+        
+        /// <summary>
+        /// rowVendorContactPhone control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlTableRow rowVendorContactPhone;
+        
+        /// <summary>
+        /// txtVendorcontact_phone control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtVendorcontact_phone;
+        
+        /// <summary>
+        /// rowVendorContactEmail control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlTableRow rowVendorContactEmail;
+        
+        /// <summary>
+        /// txtVendorcontact_email control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtVendorcontact_email;
+        
+        /// <summary>
+        /// rowVendorContactAccountNumber control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlTableRow rowVendorContactAccountNumber;
+        
+        /// <summary>
+        /// txtVendor_customer_account_number control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtVendor_customer_account_number;
+        
+        /// <summary>
         /// vendorDetailsHeader control.
         /// </summary>
         /// <remarks>
@@ -247,42 +319,6 @@ namespace IMETPO {
         protected global::System.Web.UI.WebControls.TextBox txtVendorFax;
         
         /// <summary>
-        /// txtVendorcontact_name control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtVendorcontact_name;
-        
-        /// <summary>
-        /// txtVendorcontact_phone control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtVendorcontact_phone;
-        
-        /// <summary>
-        /// txtVendorcontact_email control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtVendorcontact_email;
-        
-        /// <summary>
-        /// txtVendor_customer_account_number control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtVendor_customer_account_number;
-        
-        /// <summary>
         /// tblLineItems control.
         /// </summary>
         /// <remarks>
@@ -301,6 +337,15 @@ namespace IMETPO {
         protected global::System.Web.UI.WebControls.TableHeaderCell headerQuantityReceived;
         
         /// <summary>
+        /// headerReceived control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TableHeaderCell headerReceived;
+        
+        /// <summary>
         /// headerToBeInventoried control.
         /// </summary>
         /// <remarks>
@@ -308,96 +353,6 @@ namespace IMETPO {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TableHeaderCell headerToBeInventoried;
-        
-        /// <summary>
-        /// newItemRow control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TableRow newItemRow;
-        
-        /// <summary>
-        /// txtQuantity_new control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtQuantity_new;
-        
-        /// <summary>
-        /// txtUOM_new control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtUOM_new;
-        
-        /// <summary>
-        /// txtLineItemNumber_new control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtLineItemNumber_new;
-        
-        /// <summary>
-        /// txtLineItemDesc_new control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtLineItemDesc_new;
-        
-        /// <summary>
-        /// txtUnitPrice_new control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtUnitPrice_new;
-        
-        /// <summary>
-        /// lblTotalPrice_new control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblTotalPrice_new;
-        
-        /// <summary>
-        /// newlineQuantityReceived control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TableCell newlineQuantityReceived;
-        
-        /// <summary>
-        /// newlineToBeInventoried control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TableCell newlineToBeInventoried;
-        
-        /// <summary>
-        /// btnAddNewLineItem control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnAddNewLineItem;
         
         /// <summary>
         /// attachments control.
@@ -508,6 +463,15 @@ namespace IMETPO {
         protected global::System.Web.UI.WebControls.Label lblTotalPrice;
         
         /// <summary>
+        /// btnAddRows control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnAddRows;
+        
+        /// <summary>
         /// hiddenLineItems control.
         /// </summary>
         /// <remarks>
@@ -517,13 +481,22 @@ namespace IMETPO {
         protected global::System.Web.UI.WebControls.HiddenField hiddenLineItems;
         
         /// <summary>
-        /// hiddenLineItemTotal control.
+        /// hiddenLineItemIDs control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HiddenField hiddenLineItemTotal;
+        protected global::System.Web.UI.WebControls.HiddenField hiddenLineItemIDs;
+        
+        /// <summary>
+        /// hiddenScrollPos control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hiddenScrollPos;
         
         /// <summary>
         /// rowBypass control.
@@ -577,7 +550,7 @@ namespace IMETPO {
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblDescription;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl lblDescription;
         
         /// <summary>
         /// txtDescription control.
@@ -595,7 +568,7 @@ namespace IMETPO {
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblRequestorNotes;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl lblRequestorNotes;
         
         /// <summary>
         /// txtRequestorNotes control.
@@ -622,7 +595,7 @@ namespace IMETPO {
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblExecutorNotes;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl lblExecutorNotes;
         
         /// <summary>
         /// txtExecutorNotes control.
@@ -641,15 +614,6 @@ namespace IMETPO {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlTableRow rowPurchaserNotes;
-        
-        /// <summary>
-        /// lblPurchaserNotes control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblPurchaserNotes;
         
         /// <summary>
         /// txtPurchaserNotes control.
@@ -677,24 +641,6 @@ namespace IMETPO {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.CheckBox chkPurchaseComplete;
-        
-        /// <summary>
-        /// rowReceiveComplete control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlTableRow rowReceiveComplete;
-        
-        /// <summary>
-        /// chkReceiveComplete control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.CheckBox chkReceiveComplete;
         
         /// <summary>
         /// btnDelete control.
@@ -733,13 +679,13 @@ namespace IMETPO {
         protected global::System.Web.UI.WebControls.LinkButton btnReject;
         
         /// <summary>
-        /// btnClose control.
+        /// btnOverrideAutoApprove control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnClose;
+        protected global::System.Web.UI.WebControls.LinkButton btnOverrideAutoApprove;
         
         /// <summary>
         /// printlink control.

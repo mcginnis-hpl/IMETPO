@@ -31,22 +31,22 @@ namespace IMETPO {
         protected global::System.Web.UI.HtmlControls.HtmlForm form1;
         
         /// <summary>
-        /// appTitle control.
+        /// headerTitle control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl appTitle;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl headerTitle;
         
         /// <summary>
-        /// appSubtitle control.
+        /// titlespan control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl appSubtitle;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl titlespan;
         
         /// <summary>
         /// tblVendorInfo control.
@@ -211,15 +211,6 @@ namespace IMETPO {
         protected global::System.Web.UI.WebControls.LinkButton btnSaveVendor;
         
         /// <summary>
-        /// btnClear control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnClear;
-        
-        /// <summary>
         /// btnDelete control.
         /// </summary>
         /// <remarks>
@@ -227,5 +218,14 @@ namespace IMETPO {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.LinkButton btnDelete;
+        
+        /// <summary>
+        /// btnNewVendor control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnNewVendor;
     }
 }

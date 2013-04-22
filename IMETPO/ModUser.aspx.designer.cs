@@ -22,22 +22,22 @@ namespace IMETPO {
         protected global::System.Web.UI.HtmlControls.HtmlForm form1;
         
         /// <summary>
-        /// appTitle control.
+        /// headerTitle control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl appTitle;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl headerTitle;
         
         /// <summary>
-        /// appSubtitle control.
+        /// titlespan control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl appSubtitle;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl titlespan;
         
         /// <summary>
         /// adminInfo control.
@@ -49,13 +49,40 @@ namespace IMETPO {
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl adminInfo;
         
         /// <summary>
-        /// txtFiscalYear control.
+        /// txtAccountBypassLimit control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtFiscalYear;
+        protected global::System.Web.UI.WebControls.TextBox txtAccountBypassLimit;
+        
+        /// <summary>
+        /// txtApproverNagFrequency control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtApproverNagFrequency;
+        
+        /// <summary>
+        /// txtPurchaserNagFrequency control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtPurchaserNagFrequency;
+        
+        /// <summary>
+        /// txtReceiverNagFrequency control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtReceiverNagFrequency;
         
         /// <summary>
         /// btnUpdateSystemValues control.
@@ -130,6 +157,24 @@ namespace IMETPO {
         protected global::System.Web.UI.WebControls.TextBox txtEmail;
         
         /// <summary>
+        /// txtFirstName control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtFirstName;
+        
+        /// <summary>
+        /// txtLastName control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtLastName;
+        
+        /// <summary>
         /// txtPassword control.
         /// </summary>
         /// <remarks>
@@ -173,6 +218,15 @@ namespace IMETPO {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.HiddenField hiddenUserID;
+        
+        /// <summary>
+        /// hiddenScrollPos control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hiddenScrollPos;
         
         /// <summary>
         /// permissions control.

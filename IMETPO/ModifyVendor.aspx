@@ -9,11 +9,11 @@
 </head>
 <body>
     <form id="form1" runat="server">
-    <div class="top">
-        <h1>
-            <span id="appTitle" runat="server"></span></h1>
-        <p>
-            <span id="appSubtitle" runat="server"></span></p>
+    <div id="headerTitle" class="banner" runat="server">
+        <img class="logo" src="images/IMET_logo.png" width="398" height="72" alt="IMET" />
+    </div>
+    <div id="title" class="title">
+        <center><span id="titlespan" runat="server"></span></center>
     </div>
     <div id="mainbody" class="content">
         <div id="backlink">
@@ -23,7 +23,8 @@
         <div id="content" class="menu">
             <h3>
                 Edit a Vendor</h3>
-            <table border="0" id="tblVendorInfo" runat="server">
+            <table border="0" id="tblVendorInfo" runat="server" width="80%">
+                <tr><td width="15%"></td><td width="35%"></td><td width="15%"></td><td width="35%"></td></tr>
                 <tr>
                     <td colspan="1">
                         Vendor ID:
@@ -37,7 +38,7 @@
                         Vendor Name:
                     </td>
                     <td colspan="3">
-                        <asp:TextBox ID="txtName" runat="server" Width="320px"></asp:TextBox>
+                        <asp:TextBox ID="txtName" runat="server" Width="100%"></asp:TextBox>
                     </td>
                 </tr>
                 <tr>
@@ -45,7 +46,7 @@
                         Vendor Description:
                     </td>
                     <td colspan="3">
-                        <asp:TextBox ID="txtDescription" runat="server" Rows="3" TextMode="MultiLine" Width="320px"></asp:TextBox>
+                        <asp:TextBox ID="txtDescription" runat="server" Rows="3" TextMode="MultiLine" Width="100%"></asp:TextBox>
                     </td>
                 </tr>
                 <tr>
@@ -53,7 +54,7 @@
                         URL:
                     </td>
                     <td colspan="3">
-                        <asp:TextBox ID="txtURL" runat="server" Width="320px"></asp:TextBox>
+                        <asp:TextBox ID="txtURL" runat="server" Width="100%"></asp:TextBox>
                     </td>
                 </tr>
                 <tr>
@@ -61,7 +62,7 @@
                         Address Line 1:
                     </td>
                     <td colspan="3">
-                        <asp:TextBox ID="txtAddress1" runat="server" Width="320px"></asp:TextBox>
+                        <asp:TextBox ID="txtAddress1" runat="server" Width="100%"></asp:TextBox>
                     </td>
                 </tr>
                 <tr>
@@ -69,7 +70,7 @@
                         Address Line 2:
                     </td>
                     <td colspan="3">
-                        <asp:TextBox ID="txtAddress2" runat="server" Width="320px"></asp:TextBox>
+                        <asp:TextBox ID="txtAddress2" runat="server" Width="100%"></asp:TextBox>
                     </td>
                 </tr>
                 <tr>
@@ -77,13 +78,13 @@
                         City:
                     </td>
                     <td>
-                        <asp:TextBox ID="txtCity" runat="server" Width="180px"></asp:TextBox>
+                        <asp:TextBox ID="txtCity" runat="server" Width="100%"></asp:TextBox>
                     </td>
                     <td>
                         State:
                     </td>
                     <td>
-                        <asp:TextBox ID="txtState" runat="server" Width="180px"></asp:TextBox>
+                        <asp:TextBox ID="txtState" runat="server" Width="100%"></asp:TextBox>
                     </td>
                 </tr>
                 <tr>
@@ -91,7 +92,7 @@
                         Postal Code:
                     </td>
                     <td colspan="3">
-                        <asp:TextBox ID="txtPostalCode" runat="server"></asp:TextBox>
+                        <asp:TextBox ID="txtPostalCode" runat="server" Width="100%"></asp:TextBox>
                     </td>
                 </tr>
                 <tr>
@@ -99,7 +100,7 @@
                         FEIN:
                     </td>
                     <td colspan="3">
-                        <asp:TextBox ID="txtFEIN" runat="server" Width="320px"></asp:TextBox>
+                        <asp:TextBox ID="txtFEIN" runat="server" Width="100%"></asp:TextBox>
                     </td>
                 </tr>
                 <tr>
@@ -107,30 +108,30 @@
                         Phone #:
                     </td>
                     <td>
-                        <asp:TextBox ID="txtPhone" runat="server" Width="160px"></asp:TextBox>
+                        <asp:TextBox ID="txtPhone" runat="server" Width="100%"></asp:TextBox>
                     </td>
                     <td>
                         Fax #:
                     </td>
                     <td>
-                        <asp:TextBox ID="txtFax" runat="server" Width="160px"></asp:TextBox>
+                        <asp:TextBox ID="txtFax" runat="server" Width="100%"></asp:TextBox>
                     </td>
                 </tr>
                 <tr>
                     <td>Contact Name:</td>
                     <td>
-                        <asp:TextBox ID="txtcontact_name" runat="server"></asp:TextBox></td>
+                        <asp:TextBox ID="txtcontact_name" runat="server" Width="100%"></asp:TextBox></td>
                         <td>Contact Phone:</td>
                         <td>
-                            <asp:TextBox ID="txtcontact_phone" runat="server"></asp:TextBox></td>
+                            <asp:TextBox ID="txtcontact_phone" runat="server" Width="100%"></asp:TextBox></td>
                 </tr>
                 <tr>
                     <td>Contact Email:</td>
                     <td>
-                        <asp:TextBox ID="txtcontact_email" runat="server"></asp:TextBox></td>
+                        <asp:TextBox ID="txtcontact_email" runat="server" Width="100%"></asp:TextBox></td>
                         <td>Customer Account #:</td>
                         <td>
-                            <asp:TextBox ID="txtcustomer_account_number" runat="server"></asp:TextBox></td>
+                            <asp:TextBox ID="txtcustomer_account_number" runat="server" Width="100%"></asp:TextBox></td>
                 </tr>
                 <tr>
                     <td colspan="4">
@@ -146,10 +147,10 @@
                         <asp:LinkButton CssClass="squarebutton" ID="btnSaveVendor" runat="server" OnClick="btnSaveVendor_Click"><span>Save Changes</span></asp:LinkButton>
                     </td>
                     <td>
-                        <asp:LinkButton CssClass="squarebutton" ID="btnClear" runat="server" OnClick="btnClear_Click"><span>Clear all fields and create a new vendor</span></asp:LinkButton>
+                        <asp:LinkButton CssClass="squarebutton" ID="btnDelete" runat="server" OnClick="btnDelete_Click"><span>Delete this Vendor</span></asp:LinkButton>
                     </td>
                     <td>
-                        <asp:LinkButton CssClass="squarebutton" ID="btnDelete" runat="server" OnClick="btnDelete_Click"><span>Delete this Vendor</span></asp:LinkButton>
+                        <asp:LinkButton CssClass="squarebutton" ID="btnNewVendor" runat="server" OnClick="btnNewVendor_Click"><span>New Vendor</span></asp:LinkButton>
                     </td>
                 </tr>
             </table>

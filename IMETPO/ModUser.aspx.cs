@@ -10,13 +10,16 @@ using IMETPOClasses;
 
 namespace IMETPO
 {
+    /// <summary>
+    /// Modify a user's details.  This page is used to create users, assign permissions, change passwords and so on.
+    /// </summary>
     public partial class ModUser : imetspage
     {
         protected void Page_Load(object sender, EventArgs e)
         {
             try
             {
-                PopulateHeader(appTitle, appSubtitle);
+                // If not authenticated, bounce the user back to login.
                 if (!IsAuthenticated)
                 {
                     string url = "Default.aspx?RETURNURL=" + Request.Url.ToString();
@@ -25,6 +28,7 @@ namespace IMETPO
                 }
                 else
                 {
+                    PopulateHeader(titlespan);
                     userInfo.Visible = true;
                     permissions.Visible = true;
                     if (!IsPostBack)
@@ -48,6 +52,10 @@ namespace IMETPO
             }
         }
 
+        /// <summary>
+        /// Return true if the user got here via the "Change Password" link, false otherwise.
+        /// </summary>
+        /// <returns></returns>
         protected bool IsSelf()
         {
             bool isSelf = false;
@@ -64,6 +72,7 @@ namespace IMETPO
             return isSelf;
         }
 
+        // Place the user data in the text fields
         protected void PopulateData(User inUser, bool isSelf)
         {
             if (inUser == null)
@@ -72,6 +81,8 @@ namespace IMETPO
                 txtUsername.Text = string.Empty;
                 txtPassword.Text = string.Empty;
                 txtPasswordConfirm.Text = string.Empty;
+                txtFirstName.Text = string.Empty;
+                txtLastName.Text = string.Empty;
             }
             else
             {
@@ -90,13 +101,17 @@ namespace IMETPO
                 {
                     chkDoNotEmail.Checked = false;
                 }
+                txtFirstName.Text = inUser.firstname;
+                txtLastName.Text = inUser.lastname;
             }
+            // If this is self-editing, hide the permissions and other admin information.
             permissions.Visible = !isSelf;
             adminInfo.Visible = !isSelf;
             rowSelectUser.Visible = !isSelf;
             rowParentUser.Visible = !isSelf;
         }
 
+        // Populate the administrator-level data.
         protected void PopulateAdminData()
         {
             if (!UserIsAdministrator)
@@ -108,6 +123,7 @@ namespace IMETPO
             }
             User working = (User)GetSessionValue("WorkingUser");
             PopulateData(working, false);
+            // Get a list of all users, and put that list in the "Users" dropdown and the "parent user" dropdown.
             SqlConnection conn = ConnectToConfigString("imetpsconnection");
             string query = "SELECT username, userid FROM users ORDER BY username";
             SqlCommand cmd = new SqlCommand()
@@ -148,6 +164,7 @@ namespace IMETPO
             catch (Exception)
             {
             }
+            // Populate the permissions lists with the current user's data.
             listAvailablePermissions.Items.Clear();
             listUserPermissions.Items.Clear();
 
@@ -198,21 +215,66 @@ namespace IMETPO
             {
                 permissions.Visible = false;
             }
+            // Get the system values, and place them in the system values fields.
             cmd = new SqlCommand()
             {
                 Connection = conn,
                 CommandType = CommandType.StoredProcedure,
                 CommandText = "sp_getsystemsetting"
             };
-            cmd.Parameters.Add(new SqlParameter("@intag", "fiscalyear"));
+            cmd.Parameters.Add(new SqlParameter("@intag", "accountbypasslimit"));
             reader = cmd.ExecuteReader();
             while (reader.Read())
             {
-                txtFiscalYear.Text = reader["value"].ToString();
+                txtAccountBypassLimit.Text = reader["value"].ToString();
             }
+            reader.Close();
+
+            cmd = new SqlCommand()
+            {
+                Connection = conn,
+                CommandType = CommandType.StoredProcedure,
+                CommandText = "sp_getsystemsetting"
+            };
+            cmd.Parameters.Add(new SqlParameter("@intag", "approver_nagcutoff"));
+            reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                txtApproverNagFrequency.Text = reader["value"].ToString();
+            }
+            reader.Close();
+
+            cmd = new SqlCommand()
+            {
+                Connection = conn,
+                CommandType = CommandType.StoredProcedure,
+                CommandText = "sp_getsystemsetting"
+            };
+            cmd.Parameters.Add(new SqlParameter("@intag", "purchaser_nagcutoff"));
+            reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                txtPurchaserNagFrequency.Text = reader["value"].ToString();
+            }
+            reader.Close();
+
+            cmd = new SqlCommand()
+            {
+                Connection = conn,
+                CommandType = CommandType.StoredProcedure,
+                CommandText = "sp_getsystemsetting"
+            };
+            cmd.Parameters.Add(new SqlParameter("@intag", "receiver_nagcutoff"));
+            reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                txtReceiverNagFrequency.Text = reader["value"].ToString();
+            }
+            reader.Close();
             conn.Close();
         }
 
+        // Add a permission to a user's account.  These post back, which is a bit inefficient, 
         protected void btnAddPermission_Click(object sender, EventArgs e)
         {
             try
@@ -225,10 +287,12 @@ namespace IMETPO
                     ShowAlert("No user is currently loaded.");
                     return;
                 }
+                // Add the new permission to the current user object.
                 IMETPOClasses.User.Permission new_perm = (IMETPOClasses.User.Permission)int.Parse(listAvailablePermissions.SelectedValue);
                 if (!working.UserPermissions.Contains(new_perm))
                     working.UserPermissions.Add(new_perm);
                 SqlConnection conn = ConnectToConfigString("imetpsconnection");
+                // Automatically save all permission changes.
                 working.Save(conn);
                 conn.Close();
                 PopulateAdminData();
@@ -240,6 +304,7 @@ namespace IMETPO
             }
         }
 
+        // Remove a permission from the current user's list of permissions.
         protected void btnRemovePermission_Click(object sender, EventArgs e)
         {
             try
@@ -267,6 +332,7 @@ namespace IMETPO
             }
         }
 
+        // Save a user's details.
         protected void btnSubmit_Click(object sender, EventArgs e)
         {
             try
@@ -304,12 +370,21 @@ namespace IMETPO
                     ShowAlert("This user must have a password.");
                     return;
                 }
-                if (!string.IsNullOrEmpty(working.password) && string.IsNullOrEmpty(txtPassword.Text))
+                /*if (!string.IsNullOrEmpty(working.password) && string.IsNullOrEmpty(txtPassword.Text))
                 {
                     ShowAlert("You have not entered a password; the user's password is unchanged.");
+                }*/
+                if (string.IsNullOrEmpty(txtFirstName.Text) || string.IsNullOrEmpty(txtLastName.Text))
+                {
+                    ShowAlert("The user must have a first and last name.");
+                    return;
                 }
                 working.username = txtUsername.Text;
                 working.email = txtEmail.Text;
+                working.firstname = txtFirstName.Text;
+                working.lastname = txtLastName.Text;
+
+                // Save the user's salted and hashed password.
                 int saltSize = 5;
                 string salt = CreateSalt(saltSize);
                 if (!string.IsNullOrEmpty(txtPassword.Text))
@@ -344,6 +419,7 @@ namespace IMETPO
                     {
                         working.parentuser = null;
                         ShowAlert("You have attempted to create a circular user relationship.  Please select a different parent for this user.");
+                        return;
                     }
                 }
                 else
@@ -379,6 +455,7 @@ namespace IMETPO
             }
         }
 
+        // When the user selected a user from the user dropdown, populate that user's data to the page.
         protected void comboUsers_SelectedIndexChanged(object sender, EventArgs e)
         {
             try
@@ -403,25 +480,53 @@ namespace IMETPO
             }
         }
 
+        // Save changes to the system values.
         protected void btnUpdateSystemValues_Click(object sender, EventArgs e)
         {
             try
             {
-                if (string.IsNullOrEmpty(txtFiscalYear.Text))
-                {
-                    ShowAlert("You must enter a fiscal year.");
-                    return;
-                }
                 SqlConnection conn = ConnectToConfigString("imetpsconnection");
-                SqlCommand cmd = new SqlCommand()
+                SqlCommand cmd = null;
+                cmd = new SqlCommand()
                 {
                     Connection = conn,
                     CommandType = CommandType.StoredProcedure,
                     CommandText = "sp_savesystemsetting"
                 };
-                cmd.Parameters.Add(new SqlParameter("@intag", "fiscalyear"));
-                cmd.Parameters.Add(new SqlParameter("@invalue", txtFiscalYear.Text));
+                cmd.Parameters.Add(new SqlParameter("@intag", "accountbypasslimit"));
+                cmd.Parameters.Add(new SqlParameter("@invalue", txtAccountBypassLimit.Text));
                 cmd.ExecuteNonQuery();
+
+                cmd = new SqlCommand()
+                {
+                    Connection = conn,
+                    CommandType = CommandType.StoredProcedure,
+                    CommandText = "sp_savesystemsetting"
+                };
+                cmd.Parameters.Add(new SqlParameter("@intag", "approver_nagcutoff"));
+                cmd.Parameters.Add(new SqlParameter("@invalue", txtApproverNagFrequency.Text));
+                cmd.ExecuteNonQuery();
+
+                cmd = new SqlCommand()
+                {
+                    Connection = conn,
+                    CommandType = CommandType.StoredProcedure,
+                    CommandText = "sp_savesystemsetting"
+                };
+                cmd.Parameters.Add(new SqlParameter("@intag", "purchaser_nagcutoff"));
+                cmd.Parameters.Add(new SqlParameter("@invalue", txtPurchaserNagFrequency.Text));
+                cmd.ExecuteNonQuery();
+
+                cmd = new SqlCommand()
+                {
+                    Connection = conn,
+                    CommandType = CommandType.StoredProcedure,
+                    CommandText = "sp_savesystemsetting"
+                };
+                cmd.Parameters.Add(new SqlParameter("@intag", "receiver_nagcutoff"));
+                cmd.Parameters.Add(new SqlParameter("@invalue", txtReceiverNagFrequency.Text));
+                cmd.ExecuteNonQuery();
+
                 conn.Close();
                 PopulateAdminData();
             }

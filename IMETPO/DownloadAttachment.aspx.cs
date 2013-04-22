@@ -10,6 +10,10 @@ using System.Data.SqlClient;
 
 namespace IMETPO
 {
+    /// <summary>
+    /// This is a page that delivers an attached file by pulling its bytes from the local file store, and then determining the file name from the database
+    /// and the MIME type from the file extension.
+    /// </summary>
     public partial class DownloadAttachment : imetspage
     {
         protected void Page_Load(object sender, EventArgs e)
@@ -32,12 +36,14 @@ namespace IMETPO
 
                 if (af.ID != Guid.Empty)
                 {
+                    // Load the bytes from the file store.
                     byte[] fileBytes = af.GetBytes();
                     System.Web.HttpContext context = System.Web.HttpContext.Current;
                     context.Response.Clear();
                     context.Response.ClearHeaders();
                     context.Response.ClearContent();
                     context.Response.AppendHeader("content-length", fileBytes.Length.ToString());
+                    // Get the MIME type from the registry using the MimeHelper class
                     context.Response.ContentType = MimeHelper.GetMimeType(af.Filename);
                     context.Response.AppendHeader("content-disposition", "attachment; filename=" + af.Filename);
                     context.Response.BinaryWrite(fileBytes);

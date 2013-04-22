@@ -9,28 +9,33 @@ using IMETPOClasses;
 
 namespace IMETPO
 {
+    /// <summary>
+    /// This page is used for all of the menu pages; it is used to search the database of requests.
+    /// </summary>
     public partial class SearchRequests : imetspage
     {
         protected void Page_Load(object sender, EventArgs e)
         {
+            // Return to the main page if the user is not logged in.
             if (!IsAuthenticated)
             {
                 string url = "Default.aspx?RETURNURL=" + Request.Url.ToString();
                 Response.Redirect(url, false);
                 return;
             }
-            try {
-            PopulateHeader(appTitle, appSubtitle);
-            if (!IsPostBack)
+            try
             {
-                Search(true);
-            }
-            if (!string.IsNullOrEmpty(hiddenUndelete.Value))
-            {
-                Guid requestid = new Guid(hiddenUndelete.Value);
-                hiddenUndelete.Value = string.Empty;
-                Undelete(requestid);
-            }
+                PopulateHeader(titlespan);
+                if (!IsPostBack)
+                {
+                    Search(true);
+                }
+                if (!string.IsNullOrEmpty(hiddenUndelete.Value))
+                {
+                    Guid requestid = new Guid(hiddenUndelete.Value);
+                    hiddenUndelete.Value = string.Empty;
+                    Undelete(requestid);
+                }
             }
             catch (Exception ex)
             {
@@ -38,6 +43,7 @@ namespace IMETPO
             }
         }
 
+        // Undelete a request (just set the status back to pending; deleted is a state, and no request is ever really deleted)
         protected void Undelete(Guid requestid)
         {
             SqlConnection conn = ConnectToConfigString("imetpsconnection");
@@ -47,7 +53,7 @@ namespace IMETPO
                 working.Load(conn, requestid);
                 working.state = PurchaseRequest.RequestState.pending;
                 working.SetLineItemState(LineItem.LineItemState.pending);
-                working.history.Add(new RequestTransaction(RequestTransaction.TransactionType.Modified, CurrentUser.userid, CurrentUser.username, "Undeleted by administrator."));
+                working.history.Add(new RequestTransaction(RequestTransaction.TransactionType.Modified, CurrentUser.userid, CurrentUser.username, "Undeleted by administrator.", CurrentUser.FullName));
                 working.Save(conn);
             }
             catch
@@ -55,11 +61,12 @@ namespace IMETPO
             }
             finally
             {
-            conn.Close();
+                conn.Close();
             }
             Search(true);
         }
 
+        // Search the requests.
         protected void Search(bool useParams)
         {
             SqlConnection conn = ConnectToConfigString("imetpsconnection");
@@ -74,6 +81,7 @@ namespace IMETPO
             bool limitscope = false;
             string linkmode = string.Empty;
             int userrole = -1;
+            // Parse the request parameters to see how to search.
             for (int i = 0; i < Request.Params.Count; i++)
             {
                 if (Request.Params.GetKey(i) == "USERONLY")
@@ -89,6 +97,7 @@ namespace IMETPO
                     linkmode = Request.Params[i];
                 }
             }
+            // Populate the list of requestors with the list of all usernames.
             if (comboRequestor.Items.Count <= 0)
             {
                 comboRequestor.Items.Add(new ListItem("All", "ALL"));
@@ -106,15 +115,17 @@ namespace IMETPO
                 }
                 reader.Close();
             }
+            // If we are using the parameters instead of the menu, iterate through the parameters and extract the filters
             if (useParams)
             {
                 for (int i = 0; i < Request.Params.Count; i++)
                 {
+                    // Filter by status
                     if (Request.Params.GetKey(i) == "STATUS")
                     {
                         if (Request.Params[i].IndexOf("|") > 0)
                         {
-                            char[] delim = {'|'};
+                            char[] delim = { '|' };
                             string[] tokens = Request.Params[i].Split(delim);
                             foreach (string s in tokens)
                             {
@@ -140,6 +151,7 @@ namespace IMETPO
                             }
                         }
                     }
+                    // Filter by date.
                     if (Request.Params.GetKey(i) == "STARTDATE")
                     {
                         startdate = DateTime.Parse(Request.Params[i]);
@@ -150,6 +162,7 @@ namespace IMETPO
                         enddate = DateTime.Parse(Request.Params[i]);
                         txtEndDate.Text = enddate.ToShortDateString();
                     }
+                    // Filter by requestor
                     if (Request.Params.GetKey(i) == "REQUESTOR")
                     {
                         requestorid = new Guid(Request.Params[i]);
@@ -162,12 +175,14 @@ namespace IMETPO
                             }
                         }
                     }
+                    // Filter by approver
                     if (Request.Params.GetKey(i) == "APPROVER")
                     {
                         approverid = new Guid(Request.Params[i]);
                     }
                 }
             }
+            // Otherwise, parse the controls to get the relevant values.
             else
             {
                 if (comboFilterStatus.SelectedIndex > 0)
@@ -187,8 +202,10 @@ namespace IMETPO
                     requestorid = new Guid(comboRequestor.SelectedValue);
                 }
             }
+            // Begin building the request
             query = "SELECT requestid, fasnumber, requestorname, vendorname, tagnumber, description, status, requestdate FROM v_requests_search";
             bool init = false;
+            // Add a giant "OR" for the status.
             if (status.Count > 0)
             {
                 if (!init)
@@ -207,6 +224,7 @@ namespace IMETPO
                 }
                 query += ")";
             }
+            // Filter by request date
             if (startdate != DateTime.MinValue)
             {
                 if (!init)
@@ -233,6 +251,7 @@ namespace IMETPO
                 init = true;
                 query += " (requestdate <='" + enddate.ToShortDateString() + "')";
             }
+            // Filter by requestor
             if (requestorid != Guid.Empty)
             {
                 if (!init)
@@ -246,6 +265,7 @@ namespace IMETPO
                 init = true;
                 query += " (requestorid ='" + requestorid.ToString() + "')";
             }
+            // Limit scope filters by the current user; the owner of the request has to be the current user.
             if (limitscope)
             {
                 if (!init)
@@ -271,12 +291,14 @@ namespace IMETPO
                 CommandType = CommandType.Text,
                 CommandText = query
             };
+            // Begin building a sortable table of requests
             string html = "<table class='example table-autosort:0 table-stripeclass:alternate'><thead><tr>";
-		    html += "<th class='table-sortable:date'>Request Date</th>";
+            html += "<th class='table-sortable:date'>Request Date</th>";
             html += "<th class='table-sortable:default'>Account #</th>";
             html += "<th class='table-sortable:default'>Requestor</th>";
             html += "<th class='table-sortable:default'>Vendor</th>";
-            html += "<th class='table-sortable:default'>Tag #</th>";
+            string subtitle_text = GetApplicationSetting("applicationSubtitle");
+            html += "<th class='table-sortable:default'>" + subtitle_text + " #</th>";
             html += "<th class='table-sortable:default'>Status</th>";
             html += "<th class='table-sortable:default'>Description</th>";
             html += "<th></th>";
@@ -312,10 +334,12 @@ namespace IMETPO
             results.InnerHtml = html;
         }
 
+        // Re-execute the search
         protected void btnSearch_Click(object sender, EventArgs e)
         {
-            try {
-            Search(false);
+            try
+            {
+                Search(false);
             }
             catch (Exception ex)
             {

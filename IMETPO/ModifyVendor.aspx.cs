@@ -10,10 +10,14 @@ using System.Data.SqlClient;
 
 namespace IMETPO
 {
+    /// <summary>
+    /// This class encapsulates the page used to edit the details of a vendor.  It is pretty straghtforward, as its just a bunch of text fields that dump back to the underlying object.
+    /// </summary>
     public partial class ModifyVendor : imetspage
     {
         protected void Page_Load(object sender, EventArgs e)
         {
+            // If the user is not authenticated, redirect to the main page.
             if (!IsAuthenticated)
             {
                 string url = "Default.aspx?RETURNURL=" + Request.Url.ToString();
@@ -22,12 +26,13 @@ namespace IMETPO
             }
             try
             {
-                PopulateHeader(appTitle, appSubtitle);
+                PopulateHeader(titlespan);
                 if (!IsPostBack)
                 {
                     RemoveSessionValue("WorkingVendor");
                     Guid vendorid = Guid.Empty;
-                    if (!UserIsAdministrator)
+                    // Hide everything if the user does not have permission to view vendors.
+                    if (!CurrentUser.UserPermissions.Contains(IMETPOClasses.User.Permission.admin) && !CurrentUser.UserPermissions.Contains(IMETPOClasses.User.Permission.purchaser))
                     {
                         tblVendorInfo.Visible = false;
                         return;
@@ -62,6 +67,7 @@ namespace IMETPO
             }
         }
 
+        // Place the details of the vendor in the text fields on this page.
         protected void PopulateData(Vendor v)
         {
             txtAddress1.Text = v.address1;
@@ -86,6 +92,22 @@ namespace IMETPO
                 lblVendorID.Text = v.vendorid.ToString();
         }
 
+        // Clear out the current vendor, create a new vendor, and repopulate the fields.
+        protected void btnNewVendor_Click(object sender, EventArgs e)
+        {
+            PopulateHeader(titlespan);
+            RemoveSessionValue("WorkingVendor");
+            if (!CurrentUser.UserPermissions.Contains(IMETPOClasses.User.Permission.admin) && !CurrentUser.UserPermissions.Contains(IMETPOClasses.User.Permission.purchaser))
+            {
+                tblVendorInfo.Visible = false;
+                return;
+            }
+            Vendor v = new Vendor();
+            SetSessionValue("WorkingVendor", v);
+            PopulateData(v);
+        }
+
+        // Save the current vendor.
         protected void btnSaveVendor_Click(object sender, EventArgs e)
         {
             try
@@ -124,20 +146,7 @@ namespace IMETPO
             }
         }
 
-        protected void btnClear_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                Vendor v = new Vendor();
-                SetSessionValue("WorkingVendor", v);
-                PopulateData(v);
-            }
-            catch (Exception ex)
-            {
-                HandleError(ex);
-            }
-        }
-
+        // Delete a vendor.
         protected void btnDelete_Click(object sender, EventArgs e)
         {
             try
